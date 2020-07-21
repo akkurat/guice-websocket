@@ -1,5 +1,6 @@
 package com.asafalima.websocket.endpoints;
 
+import com.asafalima.websocket.services.BroadCastService;
 import com.asafalima.websocket.services.MessagingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.websocket.CloseReason;
 import javax.websocket.CloseReason.CloseCodes;
 import javax.websocket.OnClose;
@@ -15,12 +17,15 @@ import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.WeakHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+@Singleton
 @ServerEndpoint(value = "/echo")
 public class EchoEndpoint {
 
@@ -29,14 +34,19 @@ public class EchoEndpoint {
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(5);
     private final List<Session> clientsSessions = new ArrayList<>();
     private final MessagingService messagingService;
+    private final WeakHashMap<Session,String> userNames = new WeakHashMap<>();
 
     @Inject
     public EchoEndpoint(final MessagingService messagingService) {
         this.messagingService = messagingService;
     }
 
+    @Inject
+    private BroadCastService broadCastService;
+
     @PostConstruct
     public void init() {
+
         scheduledExecutorService.scheduleAtFixedRate(() -> clientsSessions.forEach(session -> {
             try {
                 if (!session.isOpen()) {
@@ -44,7 +54,7 @@ public class EchoEndpoint {
                     return;
                 }
 
-                String message = messagingService.getMessage();
+                String message = messagingService.getMessage(userNames.get(session));
                 LOGGER.info("Sending message: {}, to client: {}", message, session);
                 session.getBasicRemote().sendText(message);
             } catch (Exception e) {
@@ -73,17 +83,57 @@ public class EchoEndpoint {
     public void onWebSocketConnect(Session session) {
         LOGGER.info("Socket Connected, session: {}", session);
         clientsSessions.add(session);
+        broadCastService.register( session, msg ->
+        { if(session.isOpen()) {
+            try {
+                session.getBasicRemote().sendText(msg);
+            } catch (IOException e) {
+                LOGGER.error("shit", e);
+            }
+        }
+        } );
     }
 
     @OnMessage
-    public void onMessage(Session session, String message) {
-        String messageToSend = message.toUpperCase();
+    public void onMessage(Session session, String message) throws IOException {
 
-        try {
-            if (session.isOpen()) session.getBasicRemote().sendText(messageToSend);
-        } catch (Exception e) {
-            LOGGER.error("Failed to send message to client, message: {}, session: {}", messageToSend, session);
+        // User is registered
+        if( userNames.containsKey(session)) {
+            if(message.startsWith(">"))
+            {
+                String payload = message.substring(1);
+                session.getBasicRemote().sendText(synchronCmd(session,payload));
+                payload.split(" ");
+            }
+            broadCastService.broadCast(userNames.get(session) + " says: " + message);
         }
+        else
+        {
+            // Assuming first message is the username
+            userNames.put(session, message);
+            session.getBasicRemote().sendText("Welcome " + message);
+        }
+
+    }
+
+    private String synchronCmd(Session session, String payload) {
+        String[] parts = payload.split(" ");
+        if( parts.length == 0 )
+            return "Empty command...";
+        switch (parts[0]) {
+            case "mv":
+                if( parts.length>1) {
+                    String name = parts[1];
+                    userNames.put(session, name);
+                    return "New username: "+name;
+                }
+                break;
+            case "ls":
+                return "Logged in users: " + userNames.values();
+        }
+
+        return null;
+
     }
 
     @OnClose

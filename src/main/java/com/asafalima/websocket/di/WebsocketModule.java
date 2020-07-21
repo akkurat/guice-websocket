@@ -1,5 +1,6 @@
 package com.asafalima.websocket.di;
 
+import com.asafalima.websocket.services.BroadCastService;
 import com.asafalima.websocket.services.MessagingService;
 import com.google.inject.AbstractModule;
 import com.asafalima.websocket.endpoints.EchoEndpoint;
@@ -13,6 +14,7 @@ public class WebsocketModule extends AbstractModule {
     protected void configure() {
         binder().requireExplicitBindings();
         bind(MessagingService.class);
+        bind(BroadCastService.class);
         bind(EchoEndpoint.class);
     }
 
