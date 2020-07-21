@@ -2,6 +2,10 @@
 *.jar
 *.war
 *.ear
+**/build
+**/out
+.gradle/
+!gradle-wrapper.jar
 /.buildpath
 /.classpath
 /.project
