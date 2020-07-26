@@ -6,7 +6,7 @@ public class ServerMessage {
 
 
     public enum TYPE {
-        BC, INFO, DM
+        BC, INFO, DM, ST
     }
 
     public final TYPE type;
