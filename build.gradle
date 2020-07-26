@@ -8,10 +8,6 @@ plugins {
 }
 
 repositories {
-    mavenLocal()
-    maven {
-        url = uri('http://repo.maven.apache.org/maven2')
-    }
     jcenter()
 	
 }
@@ -26,6 +22,10 @@ dependencies {
     implementation 'com.netflix.governator:governator:1.15.11'
     implementation 'org.slf4j:jcl-over-slf4j:1.7.12'
     implementation 'ch.qos.logback:logback-classic:1.1.8'
+
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.11.1'
+
+
 }
 
 group = 'com.asafalima'

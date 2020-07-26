@@ -1,7 +1,12 @@
 package com.asafalima.websocket.endpoints;
 
+import com.asafalima.websocket.endpoints.data.ClientMessage;
+import com.asafalima.websocket.endpoints.data   .ServerMessage;
 import com.asafalima.websocket.services.BroadCastService;
 import com.asafalima.websocket.services.MessagingService;
+import com.asafalima.websocket.services.RoomService;
+import com.google.common.collect.ImmutableSet;
+import org.eclipse.jetty.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,32 +14,30 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.websocket.CloseReason;
+import javax.websocket.*;
 import javax.websocket.CloseReason.CloseCodes;
-import javax.websocket.OnClose;
-import javax.websocket.OnError;
-import javax.websocket.OnMessage;
-import javax.websocket.OnOpen;
-import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.WeakHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static com.asafalima.websocket.endpoints.data.ServerMessage.TYPE.*;
+
 @Singleton
-@ServerEndpoint(value = "/echo")
+@ServerEndpoint(value = "/echo", encoders = {JsonEncoder.class}, decoders = {JsonDecoder.class})
 public class EchoEndpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EchoEndpoint.class);
+    public static final ServerMessage.URef LADIALAD = new ServerMessage.URef("server", "Server");
 
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(5);
     private final List<Session> clientsSessions = new ArrayList<>();
     private final MessagingService messagingService;
-    private final WeakHashMap<Session,String> userNames = new WeakHashMap<>();
+
 
     @Inject
     public EchoEndpoint(final MessagingService messagingService) {
@@ -43,6 +46,9 @@ public class EchoEndpoint {
 
     @Inject
     private BroadCastService broadCastService;
+
+    @Inject
+    private RoomService us;
 
     @PostConstruct
     public void init() {
@@ -54,9 +60,9 @@ public class EchoEndpoint {
                     return;
                 }
 
-                String message = messagingService.getMessage(userNames.get(session));
+                String message = messagingService.getMessage(us.getUser(session));
                 LOGGER.info("Sending message: {}, to client: {}", message, session);
-                session.getBasicRemote().sendText(message);
+                session.getAsyncRemote().sendObject(ServerMessage.dm(LADIALAD,message));
             } catch (Exception e) {
                 LOGGER.error("Error while sending message to client: {}", session, e);
             }
@@ -83,53 +89,72 @@ public class EchoEndpoint {
     public void onWebSocketConnect(Session session) {
         LOGGER.info("Socket Connected, session: {}", session);
         clientsSessions.add(session);
+        WeakReference<Session> weakSession = new WeakReference<>(session);
         broadCastService.register( session, msg ->
-        { if(session.isOpen()) {
-            try {
-                session.getBasicRemote().sendText(msg);
-            } catch (IOException e) {
-                LOGGER.error("shit", e);
+        {
+            var s = weakSession.get();
+            if(s != null)
+            if(s.isOpen()) {
+                s.getAsyncRemote().sendObject(msg);
             }
-        }
         } );
     }
 
     @OnMessage
-    public void onMessage(Session session, String message) throws IOException {
+    public void onMessage( ClientMessage cMessage, Session session   ) throws IOException, EncodeException {
 
         // User is registered
-        if( userNames.containsKey(session)) {
-            if(message.startsWith(">"))
+        ServerMessage.URef userRef = us.getUserRef(session);
+        if( userRef != null ) {
+            if(cMessage.type == INFO)
             {
-                String payload = message.substring(1);
-                session.getBasicRemote().sendText(synchronCmd(session,payload));
-                payload.split(" ");
+                session.getBasicRemote().sendObject(synchronCmd(session,cMessage));
             }
-            broadCastService.broadCast(userNames.get(session) + " says: " + message);
+            else if(cMessage.type == DM)
+            {
+                var sessionId = cMessage.params.get("uref");
+                var targetSession = us.get( sessionId );
+                targetSession.ifPresentOrElse( s -> s.getAsyncRemote().sendObject(
+                        ServerMessage.dm(userRef, cMessage.content )),
+                            () -> LOGGER.warn(sessionId + " not found...")
+                );
+            }
+            else if(cMessage.type == BC)
+            {
+                ServerMessage sMessage = ServerMessage.bc(userRef, cMessage.content);
+                broadCastService.broadCast(sMessage);
+            }
         }
         else
         {
             // Assuming first message is the username
-            userNames.put(session, message);
-            session.getBasicRemote().sendText("Welcome " + message);
+            var username = cMessage.params.get("username");
+            if(StringUtil.isBlank(username))
+            {
+                session.close(new CloseReason(CloseCodes.PROTOCOL_ERROR, "Username cannot be empty."));
+                return;
+            }
+            us.registerUser( session, username );
+            session.getAsyncRemote().sendObject(ServerMessage.bc(LADIALAD,"Welcome " + username));
+            ServerMessage sMessage = ServerMessage.bc(LADIALAD, username + " entered da room.");
+            broadCastService.broadCast(sMessage, ImmutableSet.of(session));
+            broadCastService.broadCast(ServerMessage.info(us.getUserList()));
         }
 
     }
 
-    private String synchronCmd(Session session, String payload) {
-        String[] parts = payload.split(" ");
-        if( parts.length == 0 )
-            return "Empty command...";
-        switch (parts[0]) {
+    private ServerMessage synchronCmd(Session session, ClientMessage payload) {
+
+        switch (payload.params.get("cmd")) {
             case "mv":
-                if( parts.length>1) {
-                    String name = parts[1];
-                    userNames.put(session, name);
-                    return "New username: "+name;
+                if( payload.params.containsKey("username")) {
+                    String name = payload.params.get("username");
+                    us.registerUser(session, name);
+                    return ServerMessage.info("New username: "+name);
                 }
                 break;
             case "ls":
-                return "Logged in users: " + userNames.values();
+                return ServerMessage.info(us.getUserList());
         }
 
         return null;
