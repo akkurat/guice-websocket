@@ -1,0 +1,19 @@
+module guice.websocket.jass.together.main {
+    requires jakarta.xml.bind;
+    requires com.google.guice;
+    requires jakarta.websocket.api;
+    requires jakarta.inject;
+    requires jakarta.ws.rs;
+    requires com.fasterxml.jackson.databind;
+    requires jakarta.websocket.server.impl;
+    requires jetty.servlet;
+    requires jetty.util;
+    requires websocket.api;
+    requires jakarta.annotation.api;
+    requires com.google.common;
+    requires jakarta.servlet.api;
+    requires jetty.server;
+    requires governator;
+    requires ch.taburett.jass.game;
+    requires org.slf4j;
+}

@@ -1,0 +1,8 @@
+plugins {
+    id 'java-library'
+}
+apply from: '../commons.gradle'
+
+dependencies {
+    implementation project(':jass-cards')
+}

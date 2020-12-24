@@ -1,0 +1,26 @@
+<div class="main">
+
+  <div class="panel">
+    <button (click)="click($event)">Ja?</button>
+    <button (click)="createGame()">Create Game</button>
+  </div>
+
+  <div class="chatmessages">
+    <ul>
+      <li *ngFor="let m of chatmessages">
+        <i>{{m.o}}: </i>{{m.m}}
+      </li>
+    </ul>
+  </div>
+
+
+  <div class="rawmessages">
+    <ul>
+      <li *ngFor="let messag of messages">
+        {{messag}}
+      </li>
+    </ul>
+  </div>
+</div>
+
+  <router-outlet></router-outlet>
