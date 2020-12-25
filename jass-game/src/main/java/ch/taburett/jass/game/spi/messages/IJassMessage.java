@@ -12,4 +12,7 @@ public interface IJassMessage<T> extends Serializable {
     PlayerReference getTo();
 
     T getPayload();
+
+
+
 }

@@ -2,18 +2,23 @@ package com.example.springboot;
 
 import java.util.Arrays;
 
-import com.apple.eawt.Application;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
+@ComponentScan({"com.asafalima.websocket.endpoints",
+        "com.asafalima.websocket.wiring",
+        "com.asafalima.websocket.services"
+})
 public class GameWorld {
 
     public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
+        SpringApplication.run(GameWorld.class, args);
     }
 
     @Bean

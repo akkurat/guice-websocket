@@ -4,5 +4,5 @@ plugins {
 apply from: '../commons.gradle'
 
 dependencies {
-    implementation project(':jass-cards')
+    api project(':jass-cards')
 }

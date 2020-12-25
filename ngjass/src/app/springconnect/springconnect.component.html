@@ -1,0 +1,29 @@
+<div>
+    <h1>Chat Events</h1>
+    <ul>
+        <li *ngFor="let m of messages">{{m}}</li>
+    </ul>
+</div>
+
+<div>
+    <h1>Game Events</h1>
+    <ul>
+        <li *ngFor="let m of cmds">{{m}}</li>
+    </ul>
+</div>
+
+<div>
+    <h1>Game Types</h1>
+    <ul>
+        <li *ngFor="let m of gametypes">{{m}}</li>
+    </ul>
+</div>
+<div>
+    <h1>Games</h1>
+    <ul>
+        <li *ngFor="let m of games">{{m}}</li>
+    </ul>
+</div>
+<input [(ngModel)]="text" />
+<button (click)="send('cmds')">Cmds</button>
+<button (click)="send('messages')">messages</button>

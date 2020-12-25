@@ -4,9 +4,10 @@ plugins {
     id 'java'
 }
 
+apply from: '../commons.gradle'
+
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '1.8'
 
 repositories {
     mavenCentral()
@@ -15,9 +16,12 @@ repositories {
 dependencies {
     implementation project(':jass-game')
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     }
+    compileOnly("org.springframework.boot:spring-boot-devtools")
+
 }
 
 test {

@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 
+import static ch.taburett.jass.game.PlayerReference.Type.SERVER;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -27,7 +28,7 @@ public class Game {
 
     PlayerReferences r = new PlayerReferences();
 
-    PlayerReference server = new PlayerReference("server");
+    PlayerReference server = new PlayerReference("server", SERVER);
     private IRoundSupplier roundSupplier;
     private IMessageRouter router;
     private ExecutorService executor;

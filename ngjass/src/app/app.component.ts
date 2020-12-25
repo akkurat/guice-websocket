@@ -9,12 +9,12 @@ import { Subject } from 'rxjs'
 })
 export class AppComponent implements OnInit {
   private echoChannel: Subject<MessageEvent|any>;
-  private messages: string[] = []
-  private chatmessages: {o:string, m:string}[] = []
+  messages: string[] = []
+  chatmessages: {o:string, m:string}[] = []
   constructor( private ws: WebsocketService) {}
   ngOnInit(): void {
     // Connect to WS
-    this.echoChannel = this.ws.connect("ws://localhost:8080/echo")
+    this.echoChannel = this.ws.connect("ws://"+window.location.host+"/api/echo")
     this.echoChannel.subscribe( msg => {this.parseMessage(msg.data)})
     this.echoChannel.next({"type":"INFO",params:{"username":"observer"}})
   }

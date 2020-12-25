@@ -4,11 +4,12 @@ import ch.taburett.jass.cards.DeckUtil;
 import ch.taburett.jass.cards.JassCard;
 import ch.taburett.jass.cards.JassValue;
 import ch.taburett.jass.game.spi.ICountModeParametrized;
+import ch.taburett.jass.game.spi.IParmeterizedRound;
 
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class ObenAbeCount implements ICountModeParametrized {
+public class ObenAbeCount implements ICountModeParametrized, IParmeterizedRound {
 
     private final Map<JassCard, Integer> map;
 
@@ -32,4 +33,8 @@ public class ObenAbeCount implements ICountModeParametrized {
         return map;
     }
 
+    @Override
+    public ICountModeParametrized getCountMode() {
+        return this;
+    }
 }
