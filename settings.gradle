@@ -7,4 +7,5 @@ include 'jass-cards'
 include 'jass-game'
 include 'dummy-game'
 include 'jass-together'
+include 'session'
 

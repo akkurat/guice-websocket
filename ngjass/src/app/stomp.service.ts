@@ -45,7 +45,7 @@ export class StompService {
   });
     return promise;
   }
-  send(filter: string, add: {}, text: string) {
+  send(filter: string, add: {}, text: string ) {
       this.client.send(filter, add, text)
   }
 

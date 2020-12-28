@@ -19,5 +19,6 @@ public interface ProxyInstanceableGame {
 
    String getCaption();
 
-   ProxyGame create( ProxyUser owner );
+   ProxyGame create(String owner );
+
 }

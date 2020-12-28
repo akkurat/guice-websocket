@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { StompService } from '../stomp.service';
 import { HttpClient } from '@angular/common/http'
+import { IGame } from '../game/jassinterfaces'
 import  * as Stomp  from 'stompjs'
 
 
@@ -14,6 +15,7 @@ import  * as Stomp  from 'stompjs'
   
 })
 export class SpringconnectComponent implements OnInit {
+  joinedGame: [string, unknown][];
 
   constructor(
     private stomp: StompService,
@@ -23,8 +25,8 @@ export class SpringconnectComponent implements OnInit {
 
   public messages: string[] = []
   public cmds: string[] = []
-  public games: string[] = []
-  public gametypes: string[] = []
+  public games: IGame[] = []
+  public gametypes = []
   private subscriptions: Stomp.Subscription[] = []
 
   public text: string
@@ -43,16 +45,35 @@ export class SpringconnectComponent implements OnInit {
         this.cmds.push(item.body)
       }).then(s => this.subscriptions.push(s));
       this.stomp.subscribe("/game/games", (item) => {
-        this.games.push(item.body)
+        this.games = JSON.parse(item.body)
       }).then(s => this.subscriptions.push(s));
       this.stomp.subscribe("/game/gametypes", (item) => {
-        this.gametypes.push(item.body)
+        this.gametypes = Object.entries(JSON.parse(item.body))
+      }).then(s => this.subscriptions.push(s));
+
+      this.stomp.subscribe("/game/joined", (item) => {
+        this.joinedGame = Object.entries(JSON.parse(item.body))
+      }).then(s => this.subscriptions.push(s));
+
+      this.stomp.subscribe("/user/game/joined", (item) => {
+        this.joinedGame = Object.entries(JSON.parse(item.body))
       }).then(s => this.subscriptions.push(s));
       
   }
 
-  send(type: string) {
-    this.stomp.send("/app/"+type, {}, this.text)
+  sendCmd(w:string) {
+    this.stomp.send("/app/cmds", {}, JSON.stringify({cmd: "PLAY", payload: {card: this.text} }))
+  }
+  sendMsg(w:string) {
+    this.stomp.send("/app/cmds", {}, this.text)
+  }
+
+  createGame() {
+    this.stomp.send("/app/cmds/new", {}, JSON.stringify({type: "all"}))
+  }
+
+  joinGame(id: string) {
+    this.stomp.send("/app/cmds/join", {}, JSON.stringify({id: id}))
   }
 
   insertOrUpdateItem(arg0: any) {

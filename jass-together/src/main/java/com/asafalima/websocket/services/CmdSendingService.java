@@ -16,8 +16,8 @@ public class CmdSendingService {
 
     public void broadcastCmdReaction(String orig) {
         messaging.convertAndSend("/game/cmds", orig);
-        messaging.convertAndSend("/game/games", orig);
         messaging.convertAndSend("/game/gametypes", orig);
     }
+
 
 }

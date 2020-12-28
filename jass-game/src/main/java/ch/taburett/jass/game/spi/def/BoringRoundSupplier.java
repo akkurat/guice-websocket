@@ -9,6 +9,7 @@ import java.util.Map;
 import static ch.taburett.jass.cards.JassColor.*;
 
 public class BoringRoundSupplier implements IRoundSupplier {
+    @Override
     public Map<String, PresenterMode> getModes(List<IRound> rounds) {
         return Map.of(
                 "ht", new PresenterMode("Herz Trumpf", () -> new Trump(HERZ)),

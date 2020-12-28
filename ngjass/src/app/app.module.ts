@@ -9,11 +9,15 @@ import {StompService} from './stomp.service'
 import { SpringconnectComponent } from './springconnect/springconnect.component'
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { LoginComponent } from './login/login.component';
+import { GameComponent } from './game/game.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    SpringconnectComponent
+    SpringconnectComponent,
+    LoginComponent,
+    GameComponent
   ],
   imports: [
     BrowserModule,

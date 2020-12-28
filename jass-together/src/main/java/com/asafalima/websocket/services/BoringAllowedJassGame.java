@@ -3,7 +3,6 @@ package com.asafalima.websocket.services;
 import ch.taburett.jass.game.Game;
 import ch.taburett.jass.game.spi.IRoundSupplier;
 import ch.taburett.jass.game.spi.def.BoringRoundSupplier;
-import ch.taburett.jass.game.spi.def.ModeDesider;
 
 public class BoringAllowedJassGame implements ProxyInstanceableGame{
     @Override
@@ -17,8 +16,8 @@ public class BoringAllowedJassGame implements ProxyInstanceableGame{
     }
 
     @Override
-    public ProxyGame create(ProxyUser owner) {
+    public ProxyGame create(String owner) {
         IRoundSupplier mode = new BoringRoundSupplier();
-        return new ProxyGame( mode, owner );
+        return new ProxyGame(owner, this, new Game(mode));
     }
 }

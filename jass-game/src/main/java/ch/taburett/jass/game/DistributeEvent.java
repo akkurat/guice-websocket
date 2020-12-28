@@ -5,8 +5,8 @@ import ch.taburett.jass.game.spi.messages.IJassMessage;
 
 import java.util.List;
 
-public record DistributeEvent(PlayerReference getFrom, PlayerReference getTo,
-                    List<JassCard> getPayload) implements IJassMessage<List<JassCard>>
+public record DistributeEvent(Game.PlayerReference getFrom, Game.PlayerReference getTo,
+                              List<JassCard> getPayload) implements IJassMessage<List<JassCard>>
 {
     @Override
     public String getCode() {

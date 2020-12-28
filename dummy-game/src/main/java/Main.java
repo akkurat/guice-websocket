@@ -1,6 +1,5 @@
 import ch.taburett.jass.game.ChatMessage;
 import ch.taburett.jass.game.Game;
-import ch.taburett.jass.game.PlayerReference;
 import ch.taburett.jass.game.spi.def.ModeDesider;
 import cli.CLIRouter;
 
@@ -15,9 +14,9 @@ public class Main {
         var game = new Game(modes);
 
         var cliRouter = new CLIRouter();
-        game.start(cliRouter);
+//        game.start(cliRouter);
 
-        game.receive( new ChatMessage(new PlayerReference("a"), new PlayerReference("b"), "GAAAAGI"));
+//        game.receive( new ChatMessage(new Game.PlayerReference("a"), new Game.PlayerReference("b"), "GAAAAGI"));
 
     }
 }

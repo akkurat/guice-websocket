@@ -4,7 +4,7 @@ import ch.taburett.jass.game.spi.IParmeterizedRound;
 
 import java.util.function.Supplier;
 
-public record PresenterMode(String description, Supplier<IParmeterizedRound> modeFactory )
+public record PresenterMode(String getDescription, Supplier<IParmeterizedRound> modeFactory )
 {
 
 }

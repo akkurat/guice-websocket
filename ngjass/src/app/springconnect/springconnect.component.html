@@ -15,15 +15,18 @@
 <div>
     <h1>Game Types</h1>
     <ul>
-        <li *ngFor="let m of gametypes">{{m}}</li>
+        <li *ngFor="let m of gametypes">{{m|json}}</li>
     </ul>
 </div>
 <div>
     <h1>Games</h1>
     <ul>
-        <li *ngFor="let m of games">{{m}}</li>
+        <li *ngFor="let m of games">
+            <span (click)="joinGame(m.uuid)">{{m|json}}</span>
+        </li>
     </ul>
 </div>
 <input [(ngModel)]="text" />
-<button (click)="send('cmds')">Cmds</button>
-<button (click)="send('messages')">messages</button>
+<button (click)="sendCmd('h')">Cmds</button>
+<button (click)="sendMsg('h')">messages</button>
+<button (click)="createGame()">Create Game</button>

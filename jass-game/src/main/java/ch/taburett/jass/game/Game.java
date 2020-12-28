@@ -4,14 +4,16 @@ import ch.taburett.jass.cards.DeckUtil;
 import ch.taburett.jass.cards.JassCard;
 import ch.taburett.jass.game.spi.IRoundSupplier;
 import ch.taburett.jass.game.spi.messages.IJassMessage;
+import ch.taburett.jass.game.spi.messages.Play;
+import ch.taburett.jass.game.spi.messages.YourTurn;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
+import java.util.function.Consumer;
 
-import static ch.taburett.jass.game.PlayerReference.Type.SERVER;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -28,52 +30,39 @@ public class Game {
 
     PlayerReferences r = new PlayerReferences();
 
-    PlayerReference server = new PlayerReference("server", SERVER);
+    PlayerReference server = new PlayerReference("server");
     private IRoundSupplier roundSupplier;
-    private IMessageRouter router;
     private ExecutorService executor;
     private EGameState state;
+
+    private int currentPlayerIdx = 0;
+    private Round round;
 
     public Game(IRoundSupplier roundSupplier) {
         this.roundSupplier = roundSupplier;
     }
 
-    public void start(IMessageRouter router) {
-        this.router = router;
-        router.register(this::receive);
+    public void start() {
         this.executor = Executors.newSingleThreadExecutor();
         executor.execute( () -> startRound(0));
     }
 
-    public void receive(IJassMessage message) {
-        executor.submit(() -> {
-            if( message instanceof ChatMessage m) {
-                message( m );
-            }
-        });
-    }
-
     private void startRound(int pos) {
 
-        Round round = new Round(r);
+        round = new Round(r);
 
         for (RoundPlayer p : round.roundPlayers) {
-            message( new DistributeEvent(server, p.player, p.cards)) ;
+            p.player.sendToUser( new DistributeEvent(server, p.player, p.cards)) ;
         }
 
         System.out.println("Wating for play...");
 
+        RoundPlayer roundPlayer = round.roundPlayers.get(currentPlayerIdx);
+        roundPlayer.player.sendToUser(
+                new YourTurn( new YourTurn.Payload(roundPlayer.cards, null)) );
 
     }
 
-    /**
-     * Sends message in background via executor thread
-     * @param message
-     */
-    private void message( IJassMessage message )
-    {
-        executor.execute(() -> this.router.send( message ));
-    }
 
     public List<PlayerReference> getPlayers() {
         return r.players;
@@ -103,7 +92,7 @@ public class Game {
         }
     }
 
-    private static class PlayerReferences {
+    private class PlayerReferences {
         public final PlayerReference A1 = new PlayerReference("A1");
         public final PlayerReference A2 = new PlayerReference("A2");
         public final PlayerReference B1 = new PlayerReference("B1");
@@ -115,5 +104,51 @@ public class Game {
 
     public static record RoundPlayer (PlayerReference player, List<JassCard> cards) {
         }
+
+    public class PlayerReference {
+        public String getRef() {
+            return ref;
+        }
+
+        private final String ref;
+        private Consumer<IJassMessage> proxy  ;
+
+        PlayerReference(String ref) {
+            this.ref = ref;
+        }
+
+        public void setProxy(Consumer<IJassMessage> proxy) {
+            this.proxy = proxy;
+        }
+        public void sendToUser(IJassMessage event) {
+            if(proxy == null )
+            {
+                throw new IllegalStateException("Proxy must always be present");
+            }
+            proxy.accept(event);
+        }
+        public void sendToServer(IJassMessage event) {
+            Game.this.receive(this, event);
+        }
+
+    }
+
+    private void receive(PlayerReference playerReference, IJassMessage event) {
+        if(getPlayers().indexOf( playerReference ) == currentPlayerIdx )
+        {
+            if(event instanceof Play p) {
+                var rp = round.roundPlayers.get(currentPlayerIdx);
+                if( rp.player != playerReference ) {
+                    throw new IllegalStateException("shit");
+                }
+                rp.cards.remove(p.getPayload());
+                currentPlayerIdx = (currentPlayerIdx+1)%4;
+                var np = round.roundPlayers.get(currentPlayerIdx);
+                executor.submit(() -> np.player.sendToUser(
+                        new YourTurn(new YourTurn.Payload(np.cards, null )) ));
+            }
+        }
+    }
+
 }
 

@@ -1,6 +1,7 @@
 import { Component, inject, OnInit  } from '@angular/core';
 import { WebsocketService } from './websocket.service';
 import { Subject } from 'rxjs'
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 
 @Component({
   selector: 'app-root',
@@ -11,12 +12,14 @@ export class AppComponent implements OnInit {
   private echoChannel: Subject<MessageEvent|any>;
   messages: string[] = []
   chatmessages: {o:string, m:string}[] = []
-  constructor( private ws: WebsocketService) {}
+  constructor( private ws: WebsocketService, private http: HttpClient) {}
   ngOnInit(): void {
+    const hos =  window.location.host;
     // Connect to WS
-    this.echoChannel = this.ws.connect("ws://"+window.location.host+"/api/echo")
+    this.echoChannel = this.ws.connect("ws://"+hos+"/api/echo")
     this.echoChannel.subscribe( msg => {this.parseMessage(msg.data)})
     this.echoChannel.next({"type":"INFO",params:{"username":"observer"}})
+
   }
   parseMessage(data: any) {
     this.messages.push(data)
