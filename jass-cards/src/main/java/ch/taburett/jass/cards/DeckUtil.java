@@ -4,15 +4,37 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class DeckUtil {
-    public static Set<JassCard> createDeck() {
+
+    private final JassCardFactory f;
+
+    private DeckUtil(JassCardFactory jassCardFactory) {
+        this.f = jassCardFactory;
+    }
+
+    /**
+     * This could be theoretically be solved via DI.
+     * However having Spring Dependency Injection as a
+     * Dependency seems like an overkill
+     */
+
+    private static final DeckUtil INSTANCE = new DeckUtil(new JassCardFactory());
+    public static DeckUtil getInstance() {
+        return INSTANCE;
+    }
+
+    public Set<JassCard> createDeck() {
         HashSet<JassCard> cards = new HashSet<>();
         for( JassColor c : JassColor.values() )
         {
             for( JassValue v : JassValue.values() )
             {
-                cards.add( new JassCard( c, v) );
+                cards.add( f.getJassCard( c, v) );
             }
         }
         return cards;
+    }
+
+    public JassCard getJassCard(JassColor c, JassValue v) {
+        return f.getJassCard(c, v);
     }
 }

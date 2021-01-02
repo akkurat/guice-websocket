@@ -1,61 +1,147 @@
 package com.asafalima.websocket.services;
 
+import ch.taburett.jass.game.spi.messages.Play;
+import ch.taburett.jass.game.spi.messages.State;
 import org.springframework.context.event.EventListener;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Service;
+import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
+import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 
 import java.security.Principal;
-import java.util.Comparator;
-import java.util.List;
-import java.util.UUID;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import static com.asafalima.websocket.services.ProxyGame.GAME_PLAY;
+
 @Service
+@Controller
 public class GameList {
 
     public static final String GAME_GAMES = "/game/games";
     public static final String GAME_JOINED = "/game/joined";
+    public static final String USER_GAME_PLAY = "/user/game/play/";
     private GameFactory gf;
+    private GameStorage gs;
     private SimpMessageSendingOperations simp;
-    ConcurrentHashMap<UUID, ProxyGame> map = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, SubscriptionSink> subscriptions = new ConcurrentHashMap<>();
 
-    public GameList(GameFactory gf, SimpMessagingTemplate simp) {
+    public GameList(GameFactory gf,
+                    GameStorage gs,
+                    SimpMessagingTemplate simp) {
         this.gf = gf;
+        this.gs = gs;
         this.simp = simp;
     }
 
 
-    public List<ProxyGame> getAllGames() {
-        return map.values().stream()
-                .sorted( Comparator.comparing( pg -> pg.creationDate))
-                .collect(Collectors.toList());
-    }
-
-    public ProxyGame createGame(String owner, String type ) {
+    public ProxyGame createGame(String owner, String type) {
         var pg = gf.createGame(owner, type);
-        map.put(pg.uuid, pg);
-
-        simp.convertAndSend(GAME_GAMES, getAllGames());
+        gs.put(pg.uuid, pg);
+        simp.convertAndSend(GAME_GAMES, gs.getAllGames());
         return pg;
     }
 
-    @EventListener
-    public void handleSubscribeEvent(SessionSubscribeEvent subscribeEvent)
+    public void deleteGame(String id)
     {
+        gs.games.remove(id);
+        simp.convertAndSend(GAME_GAMES, gs.getAllGames());
+    }
+
+
+
+    @EventListener
+    public void handleSubscribeEvent(SessionSubscribeEvent subscribeEvent) {
         StompHeaderAccessor wrap = StompHeaderAccessor.wrap(subscribeEvent.getMessage());
-        if(GAME_GAMES.equals(wrap.getDestination())) {
-            simp.convertAndSend(GAME_GAMES, getAllGames());
+        // TODO: this could be solved by @SubscribeMapping @SendTo
+        String destination = wrap.getDestination();
+        String uname = subscribeEvent.getUser().getName();
+
+        if (GAME_GAMES.equals(destination)) {
+            simp.convertAndSend(GAME_GAMES, gs.getAllGames());
+        }
+
+        if (("/user" + GAME_JOINED).equals(destination)) {
+            simp.convertAndSendToUser(uname, GAME_JOINED, gs.getAllGames());
+        }
+
+        if (destination.startsWith(USER_GAME_PLAY)) {
+            if (gs.isGameEndpointAllowed(wrap)) {
+                String id = GameStorage.extractSuffix(destination, USER_GAME_PLAY);
+                ProxyGame proxyGame = gs.get((id));
+                // TODO: remember stomp subscription id
+
+                ProxyUser playerByName = proxyGame.getPlayerByName(uname);
+                var sink = new SubscriptionSink(
+                        simp, id, wrap.getSubscriptionId(), wrap.getSessionId(), playerByName );
+                subscriptions.put( wrap.getSubscriptionId(), sink );
+                playerByName.userConnected(sink::sendToUser);
+            } else {
+                String id = GameStorage.extractSuffix(destination, USER_GAME_PLAY);
+                simp.convertAndSendToUser(uname, GAME_PLAY+id, "ERROR");
+            }
+        }
+
+    }
+    private void sendToUser(String name, Object msg)
+    {
+    }
+
+    @EventListener
+    public void handleSubscriptionLostEvent( SessionUnsubscribeEvent sessionUnsubscribeEvent ) {
+        StompHeaderAccessor wrap = StompHeaderAccessor.wrap(sessionUnsubscribeEvent.getMessage());
+        String subscriptionId = wrap.getSubscriptionId();
+        disconnectSubscription(subscriptionId);
+        System.out.println( sessionUnsubscribeEvent );
+
+    }
+
+    public void disconnectSubscription(String subscriptionId) {
+        SubscriptionSink subscriptionSink = subscriptions.remove(subscriptionId);
+        if(subscriptionSink != null )
+        {
+            subscriptionSink.getPlayerByName().userDisconnected();
         }
     }
 
-    public void join(String id, Principal user) {
-        var pg = map.get(UUID.fromString(id));
-        pg.join( user.getName() );
-        simp.convertAndSend( GAME_JOINED, pg );
-        simp.convertAndSendToUser( user.getName(), GAME_JOINED, pg );
+
+    @EventListener
+    public void handleSubscriptionLostEvent( SessionDisconnectEvent sessionUnsubscribeEvent ) {
+        System.out.println( sessionUnsubscribeEvent );
+        var subs = subscriptions.values().stream()
+                .filter(s -> s.getSessionId() == sessionUnsubscribeEvent.getSessionId() )
+                .map(SubscriptionSink::getSubscriptionId)
+                .collect(Collectors.toList());
+
+        subs.forEach( this::disconnectSubscription );
     }
+
+
+
+    public void join(String id, Principal user) {
+        var pg = gs.get((id));
+        pg.join(user.getName());
+        simp.convertAndSend(GAME_JOINED, pg);
+        simp.convertAndSendToUser(user.getName(), GAME_JOINED, pg);
+    }
+
+
+    @MessageMapping("/cmds/play/{game}")
+    public void convert(@DestinationVariable String game, @Payload GameCmdPlay play, StompHeaderAccessor headerAccessor) {
+        if (gs.isGameEndpointAllowed(headerAccessor)) {
+            var pg = gs.get((game));
+            ProxyUser playerByName = pg.getPlayerByName(headerAccessor.getUser().getName());
+            var playEvent = new Play(play.jassCard());
+            playerByName.receivePlayerMsg(playEvent);
+        }
+    }
+
 }

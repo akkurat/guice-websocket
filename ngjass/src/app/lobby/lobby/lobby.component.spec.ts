@@ -1,6 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { SpringconnectComponent } from './springconnect.component';
+import { SpringconnectComponent } from './lobby.component';
 
 describe('SpringconnectComponent', () => {
   let component: SpringconnectComponent;

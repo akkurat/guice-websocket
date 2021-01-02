@@ -3,6 +3,7 @@ package com.asafalima.websocket.endpoints;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.security.config.annotation.web.messaging.MessageSecurityMetadataSourceRegistry;
 import org.springframework.security.config.annotation.web.socket.AbstractSecurityWebSocketMessageBrokerConfigurer;
@@ -17,12 +18,24 @@ import org.springframework.web.socket.server.support.HttpSessionHandshakeInterce
 @EnableWebSocketMessageBroker
 public class WebSocketStompConfig extends AbstractSecurityWebSocketMessageBrokerConfigurer {
 
+
+    private GameInterceptor gi;
+
+    public WebSocketStompConfig(GameInterceptor gi) {
+        this.gi = gi;
+    }
+
     @Override
     protected void configureInbound(
             MessageSecurityMetadataSourceRegistry messages) {
         messages
                 .simpDestMatchers("/secured/**").authenticated()
                 .anyMessage().authenticated();
+    }
+
+    @Override
+    protected void customizeClientInboundChannel(ChannelRegistration registration) {
+        registration.interceptors(gi);
     }
 
     @Override
@@ -44,8 +57,5 @@ public class WebSocketStompConfig extends AbstractSecurityWebSocketMessageBroker
                 .setAllowedOrigins("*");
     }
 
-    @Override
-    protected boolean sameOriginDisabled() {
-        return true;
-    }
+
 }

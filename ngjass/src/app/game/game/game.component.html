@@ -1,0 +1,20 @@
+<div class="deck">
+    <div *ngFor="let c of table">
+        <div>{{c.playerReference.ref}}</div>
+        <jas-card [card]="c.card"></jas-card>
+    </div>
+</div>
+<div class="deck">
+    <div *ngFor="let card of cards">
+        <jas-card [card]="card" (click)="playCard(card)"></jas-card>
+    </div>
+</div>
+<div>
+    {{params|json}}
+</div>
+<ul>
+    <li *ngFor="let m of gameEvents">{{m|json}}</li>
+</ul>
+<div>
+    <jas-chat></jas-chat>
+</div>

@@ -15,13 +15,13 @@ public class TrumpfCount implements ICountModeParametrized {
 
     TrumpfCount( JassColor color )
     {
-        this.map = DeckUtil.createDeck().stream()
+        this.map = DeckUtil.getInstance().createDeck().stream()
                 .collect(Collectors.toMap( c -> c, c -> mapCard(c, color)));
     }
 
     private int mapCard( JassCard c, JassColor color ) {
-        JassValue v = c.getValue();
-        if( c.getColor() == color ) {
+        JassValue v = c.value;
+        if( c.color == color ) {
             if (v == JassValue._9) {
                 return 14;
             }

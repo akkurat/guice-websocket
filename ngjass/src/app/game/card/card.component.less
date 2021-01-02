@@ -1,0 +1,49 @@
+
+.red {
+    color: red;
+}
+
+.black {
+    color: black;
+}
+
+.card {
+    border-width: 2px;
+    border-color: black;
+    border-style: solid;
+    border-radius: 10px;
+    height: 150px;
+    width: 100px;
+    display: grid;
+    grid-template-columns: 15px 60px 15px;
+    grid-template-areas: 
+    "tl . tr"
+    ". c ."
+    "bl . br"
+    ;
+    justify-items: center;
+    align-items: center;
+    justify-content: space-around;
+
+}
+
+.tl {
+    grid-area: tl;
+}
+
+.tr {
+    grid-area: tr;
+}
+
+.bl {
+    grid-area: bl;
+}
+
+.br {
+    grid-area: br;
+    transform: rotate(180deg);
+}
+.c {
+    grid-area: c;
+    font-size: 50px;
+}

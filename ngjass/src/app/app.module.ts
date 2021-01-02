@@ -6,24 +6,26 @@ import { AppComponent } from './app.component';
 
 import {WebsocketService} from './websocket.service';
 import {StompService} from './stomp.service'
-import { SpringconnectComponent } from './springconnect/springconnect.component'
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { LoginComponent } from './login/login.component';
-import { GameComponent } from './game/game.component';
+import { GameComponent } from './game/game/game.component';
+
+import { LoginModule } from './login/login.module'
+import { LobbyModule } from './lobby';
+import { GameModule } from './game';
 
 @NgModule({
   declarations: [
     AppComponent,
-    SpringconnectComponent,
-    LoginComponent,
-    GameComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
-    FormsModule
+    FormsModule,
+    LoginModule,
+    GameModule,
+    LobbyModule
   ],
   providers: [WebsocketService, StompService],
   bootstrap: [AppComponent]

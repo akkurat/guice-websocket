@@ -1,11 +1,4 @@
 <div>
-    <h1>Chat Events</h1>
-    <ul>
-        <li *ngFor="let m of messages">{{m}}</li>
-    </ul>
-</div>
-
-<div>
     <h1>Game Events</h1>
     <ul>
         <li *ngFor="let m of cmds">{{m}}</li>
@@ -22,7 +15,8 @@
     <h1>Games</h1>
     <ul>
         <li *ngFor="let m of games">
-            <span (click)="joinGame(m.uuid)">{{m|json}}</span>
+           <span (click)="removeGame(m.uuid)"> [X]</span>
+           <span (click)="joinGame(m.uuid)">{{m|json}}</span>
         </li>
     </ul>
 </div>

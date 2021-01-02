@@ -1,13 +1,13 @@
 package com.asafalima.websocket.endpoints;
 
-import com.asafalima.websocket.services.GameFactory;
-import com.asafalima.websocket.services.GameList;
-import com.asafalima.websocket.services.ProxyGame;
-import com.asafalima.websocket.services.ProxyInstanceableGame;
+import com.asafalima.websocket.services.*;
 import org.springframework.security.web.server.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
@@ -16,27 +16,22 @@ import java.util.Map;
 @RestController
 public class GamePoint {
 
-    private GameList gl;
+    private GameStorage gs;
     private GameFactory gf;
 
-    GamePoint(GameList gl, GameFactory gf) {
-        this.gl = gl;
+    GamePoint(GameStorage gs, GameFactory gf) {
+        this.gs = gs;
         this.gf = gf;
     }
 
     @RequestMapping("/api/games")
     public List<ProxyGame> list() {
-        return gl.getAllGames();
+        return gs.getAllGames();
     }
 
     @RequestMapping("/api/gametypes")
     public Map<String, ProxyInstanceableGame> listPossibleGames() {
         return gf.getPossibleGames();
-    }
-
-    @RequestMapping("/api/csrf")
-    public CsrfToken csrf(CsrfToken token) {
-        return token;
     }
 
     @RequestMapping("/api/user")

@@ -1,42 +1,38 @@
 package com.asafalima.websocket.services;
 
 import ch.taburett.jass.cards.JassCard;
-import ch.taburett.jass.game.Game;
 import ch.taburett.jass.game.spi.messages.IJassMessage;
 import ch.taburett.jass.game.spi.messages.Play;
-import ch.taburett.jass.game.spi.messages.YourTurn;
+import ch.taburett.jass.game.spi.messages.Status;
+import ch.taburett.jass.game.spi.messages.StatusPayload;
 
-public class BotProxy implements IProxyUser{
-    private String getUserName;
-    private Game.PlayerReference getReference;
+import java.util.function.Consumer;
 
-    BotProxy(String getUserName, Game.PlayerReference getReference) {
-        this.getUserName = getUserName;
-        this.getReference = getReference;
+public class BotProxy {
+
+
+    private Consumer<Play> sink;
+
+    public BotProxy(Consumer<Play> sink) {
+        this.sink = sink;
     }
 
-    @Override
-    public String getUserName() {
-        return getUserName;
-    }
-
-    @Override
-    public Game.PlayerReference getReference() {
-        return getReference;
-    }
-
-    @Override
-    public void receivePlayerMsg(IJassMessage msg) {
-    }
-
-    @Override
-    public void receiveServerMessage(IJassMessage msg) {
+    public void receiveServerMessage(String name, IJassMessage msg) {
         System.out.println(msg);
-        if(msg instanceof YourTurn yt) {
-            YourTurn.Payload pl = yt.getPayload();
-            JassCard card = pl.getAvailCards().get(0);
-            getReference.sendToServer( new Play(card) );
+        if(msg instanceof Status) {
+            Status yt = (Status) msg;
+            StatusPayload pl = yt.getPayload();
+            if( pl.yourTurn ) {
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                JassCard card = pl.availCards.get(0);
+                sink.accept(new Play(card));
+            }
         }
     }
+
 
 }

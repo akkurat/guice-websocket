@@ -20,9 +20,9 @@ public class CLIRouter implements IMessageRouter {
     }
 
     void message(IJassMessage message) {
-        if( message instanceof ChatMessage m)
+        if( message instanceof ChatMessage)
         {
-            chat_print(m);
+            chat_print((ChatMessage) message);
         }
 
     }

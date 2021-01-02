@@ -15,12 +15,12 @@ public class ObenAbeCount implements ICountModeParametrized, IParmeterizedRound 
 
     ObenAbeCount()
     {
-        this.map = DeckUtil.createDeck().stream()
+        this.map = DeckUtil.getInstance().createDeck().stream()
                 .collect(Collectors.toMap( c -> c, this::mapCard ));
     }
 
     private int mapCard(JassCard c) {
-        JassValue v = c.getValue();
+        JassValue v = c.value;
         if(v == JassValue._8) {
             return 8;
         }

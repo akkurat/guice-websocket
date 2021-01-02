@@ -1,6 +1,7 @@
 package com.asafalima.websocket.services;
 
 import com.asafalima.websocket.endpoints.GameCmd;
+import com.asafalima.websocket.endpoints.GameCmdDelete;
 import com.asafalima.websocket.endpoints.GameCmdJoin;
 import com.asafalima.websocket.endpoints.GameCmdNew;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -27,7 +28,7 @@ public class GameLogic {
     public void react(GameCmd message, SimpMessageHeaderAccessor headerAccessor) {
         switch (message.getCmd())
         {
-            case NEW_GAME -> {
+            case NEW_GAME: {
                 String type = message.getPayload().get("type");
             }
         }
@@ -41,6 +42,12 @@ public class GameLogic {
     public void newGame(GameCmdNew wrapper, SimpMessageHeaderAccessor headerAccessor) {
         var user = headerAccessor.getUser();
         gl.createGame(headerAccessor.getUser().getName(), wrapper.type);
+    }
+    public void deleteGame(GameCmdDelete wrapper, SimpMessageHeaderAccessor headerAccessor) {
+        var user = headerAccessor.getUser();
+        // TODO: probably a memory leak like that
+        // -> use weak refrences in PlayerReference and so own...
+        gl.deleteGame(wrapper.gameId);
     }
 
     public void join(GameCmdJoin join, SimpMessageHeaderAccessor header) {

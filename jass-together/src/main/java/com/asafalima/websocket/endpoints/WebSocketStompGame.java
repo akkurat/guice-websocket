@@ -3,6 +3,8 @@ package com.asafalima.websocket.endpoints;
 import com.asafalima.websocket.messages.GameMessageWrapper;
 import com.asafalima.websocket.services.GameCmdPlay;
 import com.asafalima.websocket.services.GameLogic;
+import org.springframework.core.annotation.Order;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
@@ -25,11 +27,19 @@ public class WebSocketStompGame {
         gl.react(wrapper, headerAccessor);
     }
 
+
     @MessageMapping("/cmds/new")
     public void newGame(@Payload GameCmdNew wrapper, SimpMessageHeaderAccessor headerAccessor )
     {
         System.out.println(wrapper);
         gl.newGame(wrapper, headerAccessor);
+    }
+
+    @MessageMapping("/cmds/remove")
+    public void deleteGame(@Payload GameCmdDelete wrapper, SimpMessageHeaderAccessor headerAccessor )
+    {
+        System.out.println(wrapper);
+        gl.deleteGame(wrapper, headerAccessor);
     }
 
     @MessageMapping("/cmds/join")
@@ -41,4 +51,9 @@ public class WebSocketStompGame {
     public void play(@Payload GameCmdPlay play, SimpMessageHeaderAccessor header) {
         gl.play( play, header );
     }
+//    @MessageMapping("/cmds/play/{gameId}")
+//    @Order(10)
+//    public void play(@DestinationVariable("gameId") String gameId, @Payload Object obj, SimpMessageHeaderAccessor header) {
+//        System.out.println(obj);
+//    }
 }

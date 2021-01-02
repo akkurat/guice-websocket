@@ -9,7 +9,7 @@ export class CheckUserService {
   constructor(private http: HttpClient) { }
 
   isLoggedIn(): Promise<string>{
-    return this.http.get("/api/user").toPromise()
+    return (this.http.get("/api/user").toPromise() as Promise<{name:string}>)
     .then( v => v?.name)
   }
 }

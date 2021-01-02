@@ -20,7 +20,6 @@ public class GameFactory {
     private SimpMessagingTemplate simp;
 
     GameFactory(SimpMessagingTemplate simp) {
-
         this.simp = simp;
     }
 
@@ -29,8 +28,10 @@ public class GameFactory {
     }
 
     public ProxyGame createGame( String owner, String type ) {
-        return list.get(type).create(owner);
+        return list.get(type).create(owner,simp);
     }
+
+
 
     @EventListener
     public void handleSubscribeEvent(SessionSubscribeEvent subscribeEvent)

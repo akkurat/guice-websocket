@@ -11,3 +11,8 @@ export enum GameState {
     INTERRUPTED,
     FINISHED
 }
+
+export interface ICard {
+    value: string
+    color: 'KREUZ' | 'HERZ' | 'ECKEN' | 'SCHAUFEL'
+}

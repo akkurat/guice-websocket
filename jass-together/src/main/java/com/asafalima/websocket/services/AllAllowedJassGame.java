@@ -2,6 +2,7 @@ package com.asafalima.websocket.services;
 
 import ch.taburett.jass.game.Game;
 import ch.taburett.jass.game.spi.def.ModeDesider;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 public class AllAllowedJassGame implements ProxyInstanceableGame {
     @Override
@@ -15,9 +16,9 @@ public class AllAllowedJassGame implements ProxyInstanceableGame {
     }
 
     @Override
-    public ProxyGame create(String owner) {
+    public ProxyGame create(String owner, SimpMessagingTemplate simp) {
         Game gamge = new Game(new ModeDesider());
-        return new ProxyGame(owner, this, gamge);
+        return new ProxyGame(owner, this, gamge, simp);
     }
 
 }

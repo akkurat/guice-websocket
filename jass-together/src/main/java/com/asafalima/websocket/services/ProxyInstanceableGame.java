@@ -1,5 +1,7 @@
 package com.asafalima.websocket.services;
 
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+
 public interface ProxyInstanceableGame {
    /**
     * Implies to start the game, once all players are set
@@ -19,6 +21,6 @@ public interface ProxyInstanceableGame {
 
    String getCaption();
 
-   ProxyGame create(String owner );
+   ProxyGame create(String owner, SimpMessagingTemplate simp);
 
 }

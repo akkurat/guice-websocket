@@ -3,6 +3,7 @@ import { Observable } from 'rxjs';
 import  * as SockJS  from 'sockjs-client'
 import * as Stomp from 'stompjs'
 import { Client } from 'stompjs';
+import { get as getCookie } from 'js-cookie'
 
 @Injectable({
   providedIn: 'root'
@@ -17,13 +18,16 @@ export class StompService {
     return new SockJS("/api/stomp");
     // return new WebSocket("ws://"+window.location.host+"/api/stomp");
   }
-  openWebSocketConnection() {
+  private openWebSocketConnection() {
     const webSocket = this.getWebSocket();
     this.client = Stomp.over(webSocket);
-    this.client.connect({}, () => {
+    const token = getCookie('XSRF-TOKEN')
+    const headers = {"X-XSRF-TOKEN": token}
+    this.client.connect(headers, frame => {
         this.waitingList.forEach( f => f() )
         this.waitingList = []
-    });
+        console.log(frame)
+    }, frame => console.log(frame));
     this.client.subscribe
   }
 
