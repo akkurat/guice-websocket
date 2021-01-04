@@ -1,9 +1,8 @@
 package com.asafalima.websocket.services;
 
-import ch.taburett.jass.game.Game;
+import ch.taburett.jass.game.PlayerReference;
 import ch.taburett.jass.game.spi.messages.IJassMessage;
 import ch.taburett.jass.game.spi.messages.Play;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.BiConsumer;
@@ -15,17 +14,17 @@ public class ProxyUser {
         return userName;
     }
 
-    public Game.PlayerReference getReference() {
+    public PlayerReference getReference() {
         return reference;
     }
 
     private final String userName;
-    private final Game.PlayerReference reference;
+    private final PlayerReference reference;
     private BiConsumer<String, IJassMessage> sink;
     private final Object lock = new Object();
     private LinkedBlockingQueue<IJassMessage> buffer;
 
-    private ProxyUser(String getUserName, Game.PlayerReference getReference)
+    private ProxyUser(String getUserName, PlayerReference getReference)
     {
         this.userName = getUserName;
         this.reference = getReference;
@@ -33,7 +32,7 @@ public class ProxyUser {
         reference.setProxy(this::receiveServerMessage);
     }
 
-    public static ProxyUser createAndConnect(String getUserName, Game.PlayerReference getReference)
+    public static ProxyUser createAndConnect(String getUserName, PlayerReference getReference)
     {
         var proxy = new ProxyUser(getUserName, getReference);
         // Cleaner way outside constructor
@@ -42,7 +41,7 @@ public class ProxyUser {
     }
 
 
-    public void receivePlayerMsg(Play msg) {
+    public void receivePlayerMsg(IJassMessage msg) {
         reference.sendToServer(msg);
     }
 

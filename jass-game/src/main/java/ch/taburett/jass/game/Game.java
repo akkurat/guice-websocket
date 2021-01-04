@@ -1,17 +1,21 @@
 package ch.taburett.jass.game;
 
-import ch.taburett.jass.cards.DeckUtil;
-import ch.taburett.jass.cards.JassCard;
+import ch.taburett.jass.game.spi.IParmeterizedRound;
 import ch.taburett.jass.game.spi.IRoundSupplier;
-import ch.taburett.jass.game.spi.messages.*;
+import ch.taburett.jass.game.spi.def.PresenterMode;
+import ch.taburett.jass.game.spi.messages.DecideEvent;
+import ch.taburett.jass.game.spi.messages.IJassMessage;
+import ch.taburett.jass.game.spi.messages.Play;
 
-import java.lang.ref.Reference;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.function.Consumer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
-import static ch.taburett.jass.game.EGameState.FINISHED;
-import static java.util.stream.Collectors.reducing;
+import static ch.taburett.jass.game.EGameState.*;
+import static ch.taburett.jass.game.RoundResponse.*;
 import static java.util.stream.Collectors.toMap;
 
 /**
@@ -24,31 +28,51 @@ import static java.util.stream.Collectors.toMap;
  * Players are initial on Conctructor
  * Players can be Changed on the outside
  */
-public class Game {
+public class Game implements IGameInfo {
 
-    PlayerReferences r = new PlayerReferences();
+    PlayerReferences r = new PlayerReferences(this);
 
     public static final IPlayerReference server = () -> "server";
     private IRoundSupplier roundSupplier;
-    private EGameState state;
+    private EGameState state = FRESH;
 
     private int currentPlayerIdx = 0;
     private Round round;
+    int selectingPlayer = 0;
+    private ArrayList<ImmutableRound> rounds = new ArrayList<>();
+
+    private final ExecutorService e = Executors.newSingleThreadExecutor();
+    private RoundPreparer roundPreparer;
 
     public Game(IRoundSupplier roundSupplier) {
         this.roundSupplier = roundSupplier;
     }
 
     public void start() {
-        startRound(0);
+        e.execute(() -> {
+            if( state == FRESH) {
+                start_();
+            } else {
+                throw new IllegalStateException();
+            }
+        });
     }
 
 
-    private void startRound(int pos) {
+    private void prepareRound(int pos) {
 
-        // TODO: Select mode
+        state = PREPARE_ROUND;
 
-        round = new Round(r);
+        Map<String, PresenterMode> modes = roundSupplier.getModes(rounds);
+
+        roundPreparer = new RoundPreparer(modes,r, this::startRound);
+        roundPreparer.prepare(selectingPlayer);
+
+    }
+
+    private void startRound(int pos, IParmeterizedRound mode) {
+        state = ROUND;
+        round = new Round(r, this, mode);
         round.start();
     }
 
@@ -57,154 +81,87 @@ public class Game {
         return r.players;
     }
 
-    private static class Round {
-        private final Map<PlayerReference, List<JassCard>> initalCards;
-        private final Map<PlayerReference, RoundPlayer> roundPlayers;
-        private Turn turn;
-        private PlayerReferences r;
-        private int currentPlayerIdx;
+    @Override
+    public boolean hasEnded(ImmutableRound currentRound) {
+        ArrayList<ImmutableRound> list = new ArrayList<>(rounds);
+        list.add(currentRound);
+        return hasEnded(list);
+    }
 
-        Round(PlayerReferences r) {
-            this.r = r;
-            var cards_ = DeckUtil.getInstance().createDeck();
-            var cards = new ArrayList<>(cards_);
-            Collections.shuffle(cards);
+    @Override
+    public boolean hasEnded(List<ImmutableRound> rounds) {
+        RoundLog roundLog = new RoundLog(rounds);
+        Map<Team, Integer> points = roundLog.getPoints();
+        return points.values().stream()
+                .anyMatch(p -> p >= roundSupplier.getMaxPoints());
+    }
 
-            this.initalCards = Map.of(
-                    r.A1, cards.subList(0, 9),
-                    r.B1, cards.subList(9, 18),
-                    r.A2, cards.subList(18, 27),
-                    r.B2, cards.subList(27, 36)
-            );
+    @Override
+    public Map<Team, Integer> getPoints(ImmutableRound currentRound) {
+        ArrayList<ImmutableRound> list = new ArrayList<>(rounds);
+        list.add(currentRound);
+        RoundLog roundLog = new RoundLog(list);
+        Map<Team, Integer> points = roundLog.getPoints();
+        return points;
+    }
 
-            this.roundPlayers = initalCards.entrySet().stream()
-                    .map(e -> new RoundPlayer(e.getKey(), e.getValue()))
-                    .collect(toMap(rp -> rp.player, rp -> rp));
-        }
-
-        private void start() {
-            for (RoundPlayer p : roundPlayers.values()) {
-                p.player.sendToUser(new DistributeEvent(server, p.player, p.cards));
-            }
-
-            System.out.println("Wating for play...");
-
-            turn = new Turn();
-
-            sendStatus();
-
-        }
-
-        public void accept(Play move, PlayerReference playerReference) {
-            var playerOnTurn = r.players.get(currentPlayerIdx);
-            if (playerReference != playerOnTurn) {
-                playerReference.sendToUser(new IllegalState("Not your Turn. Patience!"));
-                return;
-            }
-            var rp = roundPlayers.get(playerReference);
-            JassCard card = move.getPayload();
-            rp.cards.remove(card);
-
-            turn.play(playerReference, card);
-            sendStati(null);
-
-            sleep();
-            turn = turn.nextTurn();
-
-            currentPlayerIdx = (currentPlayerIdx + 1) % 4;
-
-            sendStatus();
-        }
-
-        private void sendStatus() {
-            var ref = r.players.get(currentPlayerIdx);
-            var np = roundPlayers.get(ref);
-
-            sendStati(np);
-
-        }
-
-        private void sendStati(RoundPlayer np) {
-            for (RoundPlayer rp_ : roundPlayers.values()) {
-                System.out.println("Sending stati");
-                rp_.player.sendToUser(
-                        new Status(new StatusPayload(rp_.cards, turn.log, rp_ == np))
-                );
-            }
-        }
+    @Override
+    public List<Map<Team, Integer>> getPoints() {
+        return rounds.stream()
+                .map(ImmutableRound::getTotalPointsByTeam)
+                .collect(Collectors.toList());
     }
 
     public static void sleep() {
         try {
-            Thread.sleep(2000);
+            Thread.sleep(100);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
 
-    private class PlayerReferences {
-        public final PlayerReference A1 = new PlayerReference("A1");
-        public final PlayerReference A2 = new PlayerReference("A2");
-        public final PlayerReference B1 = new PlayerReference("B1");
-        public final PlayerReference B2 = new PlayerReference("B2");
-
-        private final List<PlayerReference> players = List.of(A1, B1, A2, B2);
-
+    public void accept(IJassMessage event, PlayerReference playerReference) {
+        e.execute(() -> accept_(event, playerReference));
     }
-
-    public static class RoundPlayer {
-        public final PlayerReference player;
-        public final ArrayList<JassCard> cards;
-
-        public RoundPlayer(PlayerReference player, List<JassCard> cards) {
-            this.player = player;
-            this.cards = new ArrayList<>(cards);
-        }
-    }
-
-    public class PlayerReference implements IPlayerReference {
-
-        @Override
-        public String getRef() {
-            return ref;
-        }
-
-        private final String ref;
-        private Consumer<IJassMessage> proxy;
-
-        PlayerReference(String ref) {
-            this.ref = ref;
-        }
-
-        public void setProxy(Consumer<IJassMessage> proxy) {
-            this.proxy = proxy;
-        }
-
-        public void sendToUser(IJassMessage event) {
-            if (proxy == null) {
-                throw new IllegalStateException("Proxy must always be present");
-            }
-            proxy.accept(event);
-        }
-
-        public void sendToServer(Play event) {
-            Game.this.accept(event, this);
-        }
-
-
-    }
-
-    private void accept(Play event, PlayerReference playerReference) {
+    /**
+     * Must be Executed on the EventThread
+     * @param event
+     * @param playerReference
+     */
+    private void accept_(IJassMessage event, PlayerReference playerReference) {
         if (state == FINISHED) {
             playerReference.sendToUser(new IllegalState("Game is FINISHED "));
         }
+        else if( state == PREPARE_ROUND ) {
+            if( event instanceof DecideEvent ) {
+                roundPreparer.accept((DecideEvent) event);
+            } else {
+                playerReference.sendToUser(new IllegalState("Only Decision"));
+            }
+        }
+        else if( state == ROUND ) {
 
-        if (round != null) {
-            round.accept(event, playerReference);
-        } else {
-            playerReference.sendToUser(new IllegalState("No Round"));
+            if (round != null && event instanceof Play) {
+                var finished = round.accept((Play) event, playerReference);
+                if (finished == GAME_ENDED) {
+                    state = FINISHED;
+                    rounds.add(round.toImmtable());
+                } else if (finished == ROUND_ENDED) {
+                    rounds.add(round.toImmtable());
+                    selectingPlayer += (selectingPlayer + 1) % 4;
+                    prepareRound(selectingPlayer);
+                }
+                System.out.println(new RoundLog(rounds).getPoints());
+
+            } else {
+                playerReference.sendToUser(new IllegalState("No Round"));
+            }
         }
     }
 
+
+    private void start_() {
+        prepareRound(selectingPlayer);
+    }
 }
 

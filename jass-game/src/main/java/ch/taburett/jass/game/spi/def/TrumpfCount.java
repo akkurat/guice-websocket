@@ -12,11 +12,14 @@ import java.util.stream.Collectors;
 public class TrumpfCount implements ICountModeParametrized {
 
     private final Map<JassCard, Integer> map;
+    private JassColor color;
 
     TrumpfCount( JassColor color )
     {
+
         this.map = DeckUtil.getInstance().createDeck().stream()
                 .collect(Collectors.toMap( c -> c, c -> mapCard(c, color)));
+        this.color = color;
     }
 
     private int mapCard( JassCard c, JassColor color ) {
@@ -36,7 +39,9 @@ public class TrumpfCount implements ICountModeParametrized {
 
     @Override
     public Map<JassCard, Integer> getCountMap() {
-        return null;
+        return map;
     }
+
+
 
 }

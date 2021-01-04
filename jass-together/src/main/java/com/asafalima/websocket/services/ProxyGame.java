@@ -1,6 +1,7 @@
 package com.asafalima.websocket.services;
 
 import ch.taburett.jass.game.Game;
+import ch.taburett.jass.game.PlayerReference;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.time.LocalDateTime;
@@ -16,7 +17,7 @@ import static com.asafalima.websocket.services.ProxyGame.GAME_STATE.STARTED;
 public class ProxyGame {
     public static final String GAME_PLAY = "/game/play/";
     public GAME_STATE state;
-    private final ConcurrentHashMap<Game.PlayerReference, ProxyUser> userList = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<PlayerReference, ProxyUser> userList = new ConcurrentHashMap<>();
     public final LocalDateTime creationDate;
     public final String uuid;
     private String owner;
@@ -45,10 +46,10 @@ public class ProxyGame {
         this.creationDate = creationDateTime;
 
 
+        join( ownerUsername );
         addBot("gagi1");
         addBot("gagi2");
         addBot("gagi3");
-        join( ownerUsername );
     }
     public String getCaption() {
         return gameInfo.getCaption();
@@ -61,7 +62,7 @@ public class ProxyGame {
             return false;
         }
 
-        Optional<Game.PlayerReference> nextFreeReference = getNextFreePlayer();
+        Optional<PlayerReference> nextFreeReference = getNextFreePlayer();
         nextFreeReference.ifPresent(
                 nf -> {
                     ProxyUser user = ProxyUser.createAndConnect(userName, nf);
@@ -86,8 +87,8 @@ public class ProxyGame {
     }
 
 
-    private Optional<Game.PlayerReference> getNextFreePlayer() {
-        Optional<Game.PlayerReference> nextFreeReference = game.getPlayers().stream()
+    private Optional<PlayerReference> getNextFreePlayer() {
+        Optional<PlayerReference> nextFreeReference = game.getPlayers().stream()
                 .filter(ref -> !userList.containsKey(ref))
                 .findAny();
         return nextFreeReference;
@@ -125,7 +126,7 @@ public class ProxyGame {
 
     public List<String> getPlayers() {
         return game.getPlayers().stream()
-                .map(Game.PlayerReference::getRef)
+                .map(PlayerReference::getRef)
                 .collect(Collectors.toList());
     }
 

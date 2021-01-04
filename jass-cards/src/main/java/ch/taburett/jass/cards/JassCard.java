@@ -10,4 +10,11 @@ public class JassCard {
         this.value = value;
     }
 
+    @Override
+    public String toString() {
+        return "JassCard{" +
+                "color=" + color +
+                ", value=" + value +
+                '}';
+    }
 }

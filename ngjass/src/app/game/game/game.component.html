@@ -1,3 +1,17 @@
+<div>
+    <ul>
+        <li 
+        (click)="selectMode(modus.key)" 
+        *ngFor="let modus of modi|keyvalue">
+        {{modus|json}}
+    </li>
+    </ul>
+</div>
+<div>
+    {{points|json}}
+    {{infopoints|json}}
+    {{mode|json}}
+</div>
 <div class="deck">
     <div *ngFor="let c of table">
         <div>{{c.playerReference.ref}}</div>

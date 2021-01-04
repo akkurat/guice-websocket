@@ -15,6 +15,10 @@ export class GameComponent implements OnInit, OnDestroy {
   gameEvents = [];
   cards : ICard[]= []
   table = []
+  points: any;
+  mode: any;
+  modi: any;
+  infopoints: any;
 
   constructor(
     private route: ActivatedRoute,
@@ -24,12 +28,10 @@ export class GameComponent implements OnInit, OnDestroy {
 
   async ngOnInit(): Promise<void> {
     this.params = this.route.params;
-    try {
+    console.log("init game")
     this.gameSubscription = await this.stomp.subscribe('/user/game/play/' + this.params.value.id,
       message => this.handleGameEvent(message.body)
       );
-    } catch {
-    }
   }
 
   handleGameEvent(payload) {
@@ -41,12 +43,21 @@ export class GameComponent implements OnInit, OnDestroy {
     if( obj.code === 'TURN' || obj.code === 'STATUS') {
       this.cards = obj.payload.availCards;
       this.table = obj.payload.roundCards;
+      this.points = obj.payload.points;
+      this.infopoints = obj.payload.gameInfoPoints
+      this.mode = obj.payload.mode;
+    } else if (obj.code === 'MODE' ) {
+        this.modi = obj.payload;
     }
     this.gameEvents.push(payload)
   }
 
   playCard(card) {
     this.stomp.send('/app/cmds/play/'+this.params.value.id, {}, JSON.stringify({code: 'PLAY', payload: card}))
+  }
+
+  selectMode(mode) {
+    this.stomp.send('/app/cmds/decide/'+this.params.value.id, {}, JSON.stringify({code: 'DECIDE', payload: {type: mode}}))
   }
 
   ngOnDestroy() {

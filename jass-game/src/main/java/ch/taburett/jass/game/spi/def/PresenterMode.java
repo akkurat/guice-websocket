@@ -2,16 +2,27 @@ package ch.taburett.jass.game.spi.def;
 
 import ch.taburett.jass.game.spi.IParmeterizedRound;
 
-import java.util.function.Supplier;
+import java.util.Map;
+import java.util.function.Function;
 
 public class PresenterMode {
     private final String description;
-    private final Supplier<IParmeterizedRound> modeFactory;
+    private final Function<Map<String,String>,IParmeterizedRound> modeFactory;
 
-    public PresenterMode(String description, Supplier<IParmeterizedRound> modeFactory) {
+    public String getDescription() {
+        return description;
+    }
+
+    public Function<Map<String,String>,IParmeterizedRound> getModeFactory() {
+        return modeFactory;
+    }
+
+    public PresenterMode(String description, Function<Map<String, String>, IParmeterizedRound> modeFactory) {
         this.description = description;
         this.modeFactory = modeFactory;
     }
+
+
 
 }
 

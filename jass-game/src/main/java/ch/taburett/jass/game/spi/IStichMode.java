@@ -1,7 +1,7 @@
 package ch.taburett.jass.game.spi;
 
-import ch.taburett.jass.game.Game;
+import ch.taburett.jass.game.PlayerReference;
 
 public interface IStichMode {
-    Game.PlayerReference winner(IRound round);
+    PlayerReference winner(IRound round);
 }

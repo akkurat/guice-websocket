@@ -6,10 +6,7 @@
 </div>
 
 <div>
-    <h1>Game Types</h1>
-    <ul>
-        <li *ngFor="let m of gametypes">{{m|json}}</li>
-    </ul>
+    <jas-gametetype></jas-gametetype>
 </div>
 <div>
     <h1>Games</h1>
@@ -23,4 +20,3 @@
 <input [(ngModel)]="text" />
 <button (click)="sendCmd('h')">Cmds</button>
 <button (click)="sendMsg('h')">messages</button>
-<button (click)="createGame()">Create Game</button>

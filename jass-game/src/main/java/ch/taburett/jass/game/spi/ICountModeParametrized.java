@@ -2,6 +2,8 @@ package ch.taburett.jass.game.spi;
 
 import ch.taburett.jass.cards.JassCard;
 import ch.taburett.jass.cards.JassValue;
+import ch.taburett.jass.game.Game;
+import ch.taburett.jass.game.Team;
 
 import java.util.Map;
 
@@ -22,5 +24,12 @@ public interface ICountModeParametrized {
             _A, 11
     );
 
+    default Integer getCount(JassCard jc) {
+        return getCountMap().get(jc);
+    }
+
+    default Map<Team, Integer> transformRoundResult( Map<Team,Integer> result ) {
+        return result;
+    }
 
 }

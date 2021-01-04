@@ -1,7 +1,7 @@
 package com.asafalima.websocket.services;
 
+import ch.taburett.jass.game.spi.messages.DecideEvent;
 import ch.taburett.jass.game.spi.messages.Play;
-import ch.taburett.jass.game.spi.messages.State;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -18,6 +18,9 @@ import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 import java.security.Principal;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
 import static com.asafalima.websocket.services.ProxyGame.GAME_PLAY;
@@ -29,10 +32,12 @@ public class GameList {
     public static final String GAME_GAMES = "/game/games";
     public static final String GAME_JOINED = "/game/joined";
     public static final String USER_GAME_PLAY = "/user/game/play/";
+    private final ScheduledExecutorService executorService;
     private GameFactory gf;
     private GameStorage gs;
     private SimpMessageSendingOperations simp;
     private final ConcurrentHashMap<String, SubscriptionSink> subscriptions = new ConcurrentHashMap<>();
+
 
     public GameList(GameFactory gf,
                     GameStorage gs,
@@ -40,6 +45,7 @@ public class GameList {
         this.gf = gf;
         this.gs = gs;
         this.simp = simp;
+        executorService = Executors.newSingleThreadScheduledExecutor();
     }
 
 
@@ -60,9 +66,15 @@ public class GameList {
 
     @EventListener
     public void handleSubscribeEvent(SessionSubscribeEvent subscribeEvent) {
+        // Pity: Somehow subscription is not necessarily ready
+        // this is not a good way to do this
+        //
+        executorService.execute( () -> {
+
         StompHeaderAccessor wrap = StompHeaderAccessor.wrap(subscribeEvent.getMessage());
         // TODO: this could be solved by @SubscribeMapping @SendTo
         String destination = wrap.getDestination();
+        System.out.println("subscribe" + destination);
         String uname = subscribeEvent.getUser().getName();
 
         if (GAME_GAMES.equals(destination)) {
@@ -70,7 +82,7 @@ public class GameList {
         }
 
         if (("/user" + GAME_JOINED).equals(destination)) {
-            simp.convertAndSendToUser(uname, GAME_JOINED, gs.getAllGames());
+//            simp.convertAndSendToUser(uname, GAME_JOINED, gs.getAllGames());
         }
 
         if (destination.startsWith(USER_GAME_PLAY)) {
@@ -90,6 +102,7 @@ public class GameList {
             }
         }
 
+        });
     }
     private void sendToUser(String name, Object msg)
     {
@@ -135,12 +148,21 @@ public class GameList {
 
 
     @MessageMapping("/cmds/play/{game}")
-    public void convert(@DestinationVariable String game, @Payload GameCmdPlay play, StompHeaderAccessor headerAccessor) {
+    public void play(@DestinationVariable String game, @Payload GameCmdPlay play, StompHeaderAccessor headerAccessor) {
         if (gs.isGameEndpointAllowed(headerAccessor)) {
             var pg = gs.get((game));
             ProxyUser playerByName = pg.getPlayerByName(headerAccessor.getUser().getName());
             var playEvent = new Play(play.jassCard());
             playerByName.receivePlayerMsg(playEvent);
+        }
+    }
+
+    @MessageMapping("/cmds/decide/{game}")
+    public void decide(@DestinationVariable String game, @Payload DecideEvent decide, StompHeaderAccessor headerAccessor) {
+        if (gs.isGameEndpointAllowed(headerAccessor)) {
+            var pg = gs.get((game));
+            ProxyUser playerByName = pg.getPlayerByName(headerAccessor.getUser().getName());
+            playerByName.receivePlayerMsg(decide);
         }
     }
 

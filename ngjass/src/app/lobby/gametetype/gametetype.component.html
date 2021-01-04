@@ -1,0 +1,6 @@
+<div class="gametypes">
+    <div (click)="createGame(m.key)" class="gametype" *ngFor="let m of gametypes |keyvalue">
+        <h2>{{m.value|json}}</h2>
+
+    </div>
+</div>

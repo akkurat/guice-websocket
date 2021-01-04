@@ -20,30 +20,28 @@ export class LobbyComponent implements OnInit {
 
   constructor(
     private stomp: StompService,
-    private http: HttpClient,
     private router: Router
 
     ) { }
 
   public cmds: string[] = []
   public games: IGame[] = []
-  public gametypes = []
   private subscriptions: Stomp.Subscription[] = []
 
   public text: string
 
   ngOnInit(): void {
     this.openWebSocketConnection();
+    console.log("init lobby")
   }
   openWebSocketConnection() {
       this.stomp.subscribe("/game/games", (item) => {
+        console.log("games message")
         this.games = JSON.parse(item.body)
-      }).then(s => this.subscriptions.push(s));
-      this.stomp.subscribe("/game/gametypes", (item) => {
-        this.gametypes = Object.entries(JSON.parse(item.body))
       }).then(s => this.subscriptions.push(s));
 
       this.stomp.subscribe("/user/game/joined", (game) => {
+        console.log("joined message")
         this.reactToJoin(JSON.parse(game.body));
       }).then(s => this.subscriptions.push(s));
       
@@ -56,9 +54,6 @@ export class LobbyComponent implements OnInit {
     this.stomp.send("/app/cmds", {}, this.text)
   }
 
-  createGame() {
-    this.stomp.send("/app/cmds/new", {}, JSON.stringify({type: "all"}))
-  }
 
   removeGame(id) {
     this.stomp.send("/app/cmds/remove", {}, JSON.stringify({gameId: id}))
@@ -78,6 +73,7 @@ export class LobbyComponent implements OnInit {
 
   ngOnDestroy() {
     this.closeWebSocketConnection();
+    console.log("lobby destroy")
   }
   closeWebSocketConnection() {
     this.subscriptions.forEach( s => s.unsubscribe())

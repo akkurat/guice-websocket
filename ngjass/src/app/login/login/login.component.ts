@@ -9,8 +9,8 @@ import { Router } from '@angular/router';
 })
 export class LoginComponent implements OnInit {
 
-    name: ''
-    password: ''
+    name = 'gagi'
+    password = 'password'
 
   constructor(private http: HttpClient, private router: Router) { 
     console.log("Construct")

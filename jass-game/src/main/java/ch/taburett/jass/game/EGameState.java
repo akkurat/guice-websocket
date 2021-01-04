@@ -1,8 +1,16 @@
 package ch.taburett.jass.game;
 
+/**
+ * Redundandant. Basically
+ * by convention (preparer == null, round == null, finished==true)
+ * we could do the same thing.
+ * however for now it seems more intuitive having
+ * an explicit state
+ * Replace Enum By Interface and different State Handlers
+ */
 public enum EGameState {
-    DIST,
-    DECIDING,
-    PLAYING,
+    FRESH,
+    PREPARE_ROUND,
+    ROUND,
     FINISHED
 }

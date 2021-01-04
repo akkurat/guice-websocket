@@ -13,11 +13,12 @@ public enum JassValue {
     _K(13),
     _A(14);
 
-    public final int ordinal;
+    public final int rank;
 
+    public static final int maxBaseRank = 14;
 
-    JassValue(int ordinal ) {
-        this.ordinal = ordinal;
+    JassValue(int rank) {
+        this.rank = rank;
     }
 
 }
