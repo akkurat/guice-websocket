@@ -1,7 +1,8 @@
 package com.asafalima.websocket.services;
 
-import ch.taburett.jass.game.Game;
-import ch.taburett.jass.game.PlayerReference;
+import ch.taburett.jass.game.api.IPlayerReference;
+import ch.taburett.jass.game.impl.PlayerReference;
+import ch.taburett.jass.game.impl.internal.Game;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.time.LocalDateTime;
@@ -17,7 +18,7 @@ import static com.asafalima.websocket.services.ProxyGame.GAME_STATE.STARTED;
 public class ProxyGame {
     public static final String GAME_PLAY = "/game/play/";
     public GAME_STATE state;
-    private final ConcurrentHashMap<PlayerReference, ProxyUser> userList = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<IPlayerReference, ProxyUser> userList = new ConcurrentHashMap<IPlayerReference, ProxyUser>();
     public final LocalDateTime creationDate;
     public final String uuid;
     private String owner;
@@ -126,7 +127,7 @@ public class ProxyGame {
 
     public List<String> getPlayers() {
         return game.getPlayers().stream()
-                .map(PlayerReference::getRef)
+                .map(IPlayerReference::getRef)
                 .collect(Collectors.toList());
     }
 

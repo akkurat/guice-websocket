@@ -7,9 +7,9 @@
     </li>
     </ul>
 </div>
+<jas-log [log]="infopoints"></jas-log>
 <div>
     {{points|json}}
-    {{infopoints|json}}
     {{mode|json}}
 </div>
 <div class="deck">
@@ -26,9 +26,8 @@
 <div>
     {{params|json}}
 </div>
-<ul>
-    <li *ngFor="let m of gameEvents">{{m|json}}</li>
-</ul>
+
+<textarea [value]="gameEvents.join('\n')"></textarea>
 <div>
     <jas-chat></jas-chat>
 </div>

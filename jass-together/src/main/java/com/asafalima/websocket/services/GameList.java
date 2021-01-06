@@ -1,7 +1,7 @@
 package com.asafalima.websocket.services;
 
-import ch.taburett.jass.game.spi.messages.DecideEvent;
-import ch.taburett.jass.game.spi.messages.Play;
+import ch.taburett.jass.game.spi.events.user.DecideEvent;
+import ch.taburett.jass.game.spi.events.user.Play;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -16,9 +16,7 @@ import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 
 import java.security.Principal;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;

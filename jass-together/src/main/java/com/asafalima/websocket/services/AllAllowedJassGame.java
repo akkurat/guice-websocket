@@ -1,7 +1,7 @@
 package com.asafalima.websocket.services;
 
-import ch.taburett.jass.game.Game;
-import ch.taburett.jass.game.spi.def.ModeDesider;
+import ch.taburett.jass.game.impl.internal.Game;
+import ch.taburett.jass.game.spi.impl.ModeDesider;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 public class AllAllowedJassGame implements ProxyInstanceableGame {

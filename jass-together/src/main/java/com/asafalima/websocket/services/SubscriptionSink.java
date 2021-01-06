@@ -1,6 +1,6 @@
 package com.asafalima.websocket.services;
 
-import ch.taburett.jass.game.spi.messages.IJassMessage;
+import ch.taburett.jass.game.spi.events.IJassMessage;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 
 import static com.asafalima.websocket.services.ProxyGame.GAME_PLAY;

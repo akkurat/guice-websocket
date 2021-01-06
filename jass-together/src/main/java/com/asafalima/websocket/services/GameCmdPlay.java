@@ -1,7 +1,6 @@
 package com.asafalima.websocket.services;
 
 import ch.taburett.jass.cards.*;
-import ch.taburett.jass.game.Game;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 

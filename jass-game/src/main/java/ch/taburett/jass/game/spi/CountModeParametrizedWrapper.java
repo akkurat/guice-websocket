@@ -1,7 +1,8 @@
 package ch.taburett.jass.game.spi;
 
 import ch.taburett.jass.cards.JassCard;
-import ch.taburett.jass.game.Team;
+import ch.taburett.jass.game.api.ITeam;
+import ch.taburett.jass.game.impl.internal.Team;
 
 import java.util.Map;
 
@@ -24,7 +25,7 @@ public class CountModeParametrizedWrapper implements ICountModeParametrized {
     }
 
     @Override
-    public Map<Team, Integer> transformRoundResult(Map<Team, Integer> result) {
+    public Map<ITeam, Integer> transformRoundResult(Map<ITeam, Integer> result) {
         return mode.transformRoundResult(result);
     }
 }

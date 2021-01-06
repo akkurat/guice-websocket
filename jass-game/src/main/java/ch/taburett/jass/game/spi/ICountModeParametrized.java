@@ -2,8 +2,8 @@ package ch.taburett.jass.game.spi;
 
 import ch.taburett.jass.cards.JassCard;
 import ch.taburett.jass.cards.JassValue;
-import ch.taburett.jass.game.Game;
-import ch.taburett.jass.game.Team;
+import ch.taburett.jass.game.api.ITeam;
+import ch.taburett.jass.game.impl.internal.Team;
 
 import java.util.Map;
 
@@ -28,7 +28,7 @@ public interface ICountModeParametrized {
         return getCountMap().get(jc);
     }
 
-    default Map<Team, Integer> transformRoundResult( Map<Team,Integer> result ) {
+    default Map<ITeam, Integer> transformRoundResult( Map<ITeam,Integer> result ) {
         return result;
     }
 

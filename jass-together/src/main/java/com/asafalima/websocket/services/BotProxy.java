@@ -1,7 +1,13 @@
 package com.asafalima.websocket.services;
 
 import ch.taburett.jass.cards.JassCard;
-import ch.taburett.jass.game.spi.messages.*;
+import ch.taburett.jass.game.spi.events.server.IServerMessage;
+import ch.taburett.jass.game.spi.events.server.ModeEvent;
+import ch.taburett.jass.game.spi.events.server.Status;
+import ch.taburett.jass.game.spi.events.server.StatusPayload;
+import ch.taburett.jass.game.spi.events.user.DecideEvent;
+import ch.taburett.jass.game.spi.events.user.IUserEvent;
+import ch.taburett.jass.game.spi.events.user.Play;
 
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
@@ -10,13 +16,13 @@ import java.util.function.Consumer;
 public class BotProxy {
 
 
-    private Consumer<IJassMessage> sink;
+    private Consumer<IUserEvent<?>> sink;
 
-    public BotProxy(Consumer<IJassMessage> sink) {
+    public BotProxy(Consumer<IUserEvent<?>> sink) {
         this.sink = sink;
     }
 
-    public void receiveServerMessage(String name, IJassMessage msg) {
+    public void receiveServerMessage(String name, IServerMessage<?> msg) {
         System.out.println(msg);
         if(msg instanceof Status) {
             Status yt = (Status) msg;
@@ -30,7 +36,7 @@ public class BotProxy {
                 JassCard card = pl.availCards.get(0);
                 sink.accept(new Play(card));
             }
-        } else if ( msg instanceof ModeEvent ) {
+        } else if ( msg instanceof ModeEvent) {
             ModeEvent e = (ModeEvent) msg;
             var keys = new ArrayList<>(e.getPayload().keySet());
             var key =  keys.get(ThreadLocalRandom.current().nextInt(keys.size()));

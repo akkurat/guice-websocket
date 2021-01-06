@@ -52,6 +52,10 @@ export class GameComponent implements OnInit, OnDestroy {
     this.gameEvents.push(payload)
   }
 
+  get gameEventsString() {
+    return JSON.stringify(this.gameEvents);
+  }
+
   playCard(card) {
     this.stomp.send('/app/cmds/play/'+this.params.value.id, {}, JSON.stringify({code: 'PLAY', payload: card}))
   }

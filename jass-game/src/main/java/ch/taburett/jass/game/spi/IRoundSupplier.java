@@ -1,7 +1,7 @@
 package ch.taburett.jass.game.spi;
 
-import ch.taburett.jass.game.ImmutableRound;
-import ch.taburett.jass.game.spi.def.PresenterMode;
+import ch.taburett.jass.game.pub.log.ImmutableRound;
+import ch.taburett.jass.game.spi.impl.PresenterMode;
 
 import java.util.ArrayList;
 import java.util.Map;
