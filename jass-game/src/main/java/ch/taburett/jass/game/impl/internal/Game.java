@@ -35,11 +35,10 @@ import static ch.taburett.jass.game.impl.internal.RoundResponse.*;
  * Players are initial on Conctructor
  * Players can be Changed on the outside
  */
-public class Game implements IGameInfo {
+public class Game implements IGameInfo, ch.taburett.jass.game.api.IGame {
 
     PlayerReferences r = new PlayerReferences(this);
 
-    public static final IPlayerReference server = () -> "server";
     private IRoundSupplier roundSupplier;
     private EGameState state = FRESH;
 
@@ -55,6 +54,7 @@ public class Game implements IGameInfo {
         this.roundSupplier = roundSupplier;
     }
 
+    @Override
     public void start() {
         e.execute(() -> {
             if( state == FRESH) {
@@ -84,8 +84,9 @@ public class Game implements IGameInfo {
     }
 
 
-    public List<PlayerReference> getPlayers() {
-        return r.players;
+    @Override
+    public List<IPlayerReference> getPlayers() {
+        return List.copyOf(r.players);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package ch.taburett.jass.game.impl.internal;
 
+import ch.taburett.jass.game.api.IPlayerReference;
 import ch.taburett.jass.game.impl.PlayerReference;
 
 import java.util.List;

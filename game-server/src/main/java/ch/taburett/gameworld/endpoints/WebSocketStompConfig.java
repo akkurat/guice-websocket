@@ -1,0 +1,58 @@
+package ch.taburett.gameworld.endpoints;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.ChannelRegistration;
+import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.security.config.annotation.web.messaging.MessageSecurityMetadataSourceRegistry;
+import org.springframework.security.config.annotation.web.socket.AbstractSecurityWebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
+import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
+import org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor;
+
+@Configuration
+@ConfigurationProperties
+@EnableWebSocketMessageBroker
+public class WebSocketStompConfig extends AbstractSecurityWebSocketMessageBrokerConfigurer {
+
+
+    private GameInterceptor gi;
+
+    public WebSocketStompConfig(GameInterceptor gi) {
+        this.gi = gi;
+    }
+
+    @Override
+    protected void configureInbound(
+            MessageSecurityMetadataSourceRegistry messages) {
+        messages
+                .simpDestMatchers("/secured/**").authenticated()
+                .anyMessage().authenticated();
+    }
+
+    @Override
+    protected void customizeClientInboundChannel(ChannelRegistration registration) {
+        registration.interceptors(gi);
+    }
+
+    @Override
+    public void configureMessageBroker(MessageBrokerRegistry config) {
+        config.enableSimpleBroker("/game", "/chat");
+        config.setApplicationDestinationPrefixes("/app");
+    }
+
+
+
+    @Override
+    public void registerStompEndpoints(StompEndpointRegistry registry) {
+        registry.addEndpoint("/api/stomp")
+                .addInterceptors(new HttpSessionHandshakeInterceptor())
+                .setAllowedOrigins("*")
+                .withSockJS();
+        registry.addEndpoint("/api/stomp")
+                .addInterceptors(new HttpSessionHandshakeInterceptor())
+                .setAllowedOrigins("*");
+    }
+
+
+}
