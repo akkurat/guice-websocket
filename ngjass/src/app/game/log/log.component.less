@@ -1,0 +1,38 @@
+.round {
+    display  : flex;
+    flex-flow: column wrap;
+    height   : 250px;
+}
+
+.turn {
+    display       : flex;
+    flex-flow     : row nowrap;
+    gap           : 15px;
+    // align-items: center;
+
+    border     : 1px solid;
+    margin     : 5px;
+    padding    : 10px;
+    align-items: center;
+
+    .whoTakes {
+
+    }
+
+    .move {
+        width : 40px;
+        height: 80px;
+
+        .card {
+            transform       : scale(0.4);
+            transform-origin: top left;
+            width           : 40px;
+            height          : 60px;
+        }
+    }
+}
+
+.log {
+    display  : flex;
+    flex-flow: row wrap;
+}

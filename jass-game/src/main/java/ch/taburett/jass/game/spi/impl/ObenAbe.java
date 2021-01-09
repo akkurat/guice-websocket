@@ -7,27 +7,53 @@ import ch.taburett.jass.cards.JassValue;
 import ch.taburett.jass.game.spi.ICountModeParametrized;
 import ch.taburett.jass.game.spi.IParmeterizedRound;
 import ch.taburett.jass.game.spi.IRankModeParametrized;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class ObenAbeCount implements ICountModeParametrized, IParmeterizedRound, IRankModeParametrized {
+public class ObenAbe implements IParmeterizedRound {
 
-    private final Map<JassCard, Integer> valueMap;
+    private final ObenAbeMode mode;
     private int faktor;
 
-    ObenAbeCount() {
+    ObenAbe() {
         this(1);
     }
 
-    ObenAbeCount(int faktor) {
+    ObenAbe(int faktor) {
         this.faktor = faktor;
-        this.valueMap = DeckUtil.getInstance().createDeck().stream()
-                .collect(Collectors.toMap(c -> c, this::mapCardValue));
+        this.mode = new ObenAbeMode();
+    }
+    @Override
+    public int getFactor() {
+        return faktor;
     }
 
-    private int mapCardValue(JassCard c) {
+    @Override
+    public ICountModeParametrized getCountMode() {
+        return mode;
+    }
+
+    @Override
+    public IRankModeParametrized getRankMode() {
+        return mode;
+    }
+
+    @Override
+    public String getCaption() {
+        return "Oben-Abe " + faktor + "x";
+    }
+
+    public static class ObenAbeMode implements IRankModeParametrized, ICountModeParametrized{
+        private final Map<JassCard, Integer> valueMap;
+
+        public ObenAbeMode() {
+            this.valueMap = DeckUtil.getInstance().createDeck().stream()
+                    .collect(Collectors.toMap(c -> c, this::mapCardValue));
+        }
+
+        private int mapCardValue(JassCard c) {
         JassValue v = c.value;
         if (v == JassValue._8) {
             return 8;
@@ -42,23 +68,6 @@ public class ObenAbeCount implements ICountModeParametrized, IParmeterizedRound,
         return valueMap;
     }
 
-    @Override
-    @JsonIgnore
-    public ICountModeParametrized getCountMode() {
-        return this;
-    }
-
-    @Override
-    @JsonIgnore
-    public IRankModeParametrized getRankMode() {
-        return this;
-    }
-
-    @Override
-    public int getFactor() {
-        return faktor;
-    }
-
 
     @Override
     public int getRank(JassCard c, JassColor roundColor) {
@@ -67,5 +76,6 @@ public class ObenAbeCount implements ICountModeParametrized, IParmeterizedRound,
             return baseRank;
         }
         return 0;
+    }
     }
 }

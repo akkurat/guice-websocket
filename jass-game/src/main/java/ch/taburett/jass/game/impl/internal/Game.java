@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static ch.taburett.jass.game.api.EGameState.*;
@@ -37,6 +39,7 @@ import static ch.taburett.jass.game.impl.internal.RoundResponse.*;
  */
 public class Game implements IGameInfo, ch.taburett.jass.game.api.IGame {
 
+    private final ThreadFactory threadFactory;
     PlayerReferences r = new PlayerReferences(this);
 
     private IRoundSupplier roundSupplier;
@@ -47,12 +50,24 @@ public class Game implements IGameInfo, ch.taburett.jass.game.api.IGame {
     int selectingPlayer = 0;
     private ArrayList<ImmutableRound> rounds = new ArrayList<>();
 
-    private final ExecutorService e = Executors.newSingleThreadExecutor();
+
+
+    private final ExecutorService e;
     private RoundPreparer roundPreparer;
+    private Thread lastThread;
 
     public Game(IRoundSupplier roundSupplier) {
+
         this.roundSupplier = roundSupplier;
+        this.threadFactory = Executors.defaultThreadFactory();
+        e = Executors.newSingleThreadExecutor(this::getThread);
     }
+
+    private Thread getThread(Runnable runnable) {
+        lastThread = threadFactory.newThread(runnable);
+        return lastThread;
+    }
+
 
     @Override
     public void start() {
@@ -67,20 +82,23 @@ public class Game implements IGameInfo, ch.taburett.jass.game.api.IGame {
 
 
     private void prepareRound(int pos) {
-
+        checkThread();
         state = PREPARE_ROUND;
 
         Map<String, PresenterMode> modes = roundSupplier.getModes(rounds);
 
+        // TODO: depending on player
         roundPreparer = new RoundPreparer(modes,r, this::startRound);
         roundPreparer.prepare(selectingPlayer);
 
     }
 
+
     private void startRound(int pos, IParmeterizedRound mode) {
+        checkThread();
         state = ROUND;
         round = new Round(r, this, mode);
-        round.start();
+        round.start(pos);
     }
 
 
@@ -120,9 +138,14 @@ public class Game implements IGameInfo, ch.taburett.jass.game.api.IGame {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<ImmutableRound> getLog() {
+        return List.copyOf(rounds);
+    }
+
     public static void sleep() {
         try {
-            Thread.sleep(100);
+            Thread.sleep(1);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -170,6 +193,11 @@ public class Game implements IGameInfo, ch.taburett.jass.game.api.IGame {
 
     private void start_() {
         prepareRound(selectingPlayer);
+    }
+    private void checkThread() {
+        if (Thread.currentThread() != lastThread) {
+            System.err.println("Shit");
+        }
     }
 }
 

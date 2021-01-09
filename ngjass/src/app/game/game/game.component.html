@@ -9,8 +9,8 @@
 </div>
 <jas-log [log]="infopoints"></jas-log>
 <div>
-    {{points|json}}
-    {{mode|json}}
+    <!-- {{points|json}} -->
+    <jas-roundinfo [info]="mode"></jas-roundinfo>
 </div>
 <div class="deck">
     <div *ngFor="let c of table">
@@ -22,6 +22,10 @@
     <div *ngFor="let card of cards">
         <jas-card [card]="card" (click)="playCard(card)"></jas-card>
     </div>
+</div>
+<div>{{yourTurn}}</div>
+<div>
+    <button (click)="jumpTimeOut()">Continue...</button>
 </div>
 <div>
     {{params|json}}

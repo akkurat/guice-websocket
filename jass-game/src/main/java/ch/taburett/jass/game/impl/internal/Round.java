@@ -3,9 +3,10 @@ package ch.taburett.jass.game.impl.internal;
 import ch.taburett.jass.cards.DeckUtil;
 import ch.taburett.jass.cards.JassCard;
 import ch.taburett.jass.game.api.IGameInfo;
+import ch.taburett.jass.game.api.IPlayerReference;
 import ch.taburett.jass.game.impl.PlayerReference;
 import ch.taburett.jass.game.pub.log.ImmutableRound;
-import ch.taburett.jass.game.pub.log.ImmutbleTurn;
+import ch.taburett.jass.game.pub.log.GenericImmutableTrick;
 import ch.taburett.jass.game.spi.IParmeterizedRound;
 import ch.taburett.jass.game.spi.events.server.IllegalState;
 import ch.taburett.jass.game.spi.events.server.Status;
@@ -24,12 +25,12 @@ import static java.util.stream.Collectors.toMap;
 class Round {
     private final Map<PlayerReference, List<JassCard>> initalCards;
     private final Map<PlayerReference, RoundPlayer> roundPlayers;
-    private Turn turn;
+    private Trick trick;
     private PlayerReferences r;
     private IGameInfo gameInfo;
     private IParmeterizedRound mode;
     private int currentPlayerIdx;
-    private ArrayList<ImmutbleTurn> turns = new ArrayList<ImmutbleTurn>();
+    private ArrayList<GenericImmutableTrick> turns = new ArrayList<GenericImmutableTrick>();
 
     Round(PlayerReferences r, IGameInfo gameInfo, IParmeterizedRound mode) {
         this.r = r;
@@ -51,14 +52,14 @@ class Round {
                 .collect(toMap(rp -> rp.player, rp -> rp));
     }
 
-    void start() {
+    void start(int pos) {
         for (RoundPlayer p : roundPlayers.values()) {
             p.player.sendToUser(new DistributeEvent(p.cards));
         }
 
         System.out.println("Wating for play...");
 
-        turn = new Turn(roundPlayers.size());
+        trick = new Trick(roundPlayers.size());
 
         sendStatus(toImmtable());
 
@@ -74,35 +75,43 @@ class Round {
         JassCard card = move.getPayload();
         rp.cards.remove(card);
 
-        turn.play(playerReference, card);
+        trick.play(playerReference, card);
 
 
         var tmpTurns = new ArrayList<>(turns);
-        tmpTurns.add(turn.getImmutableTurn());
+        tmpTurns.add(trick.getImmutableTrick());
         ImmutableRound tmpRound = toImmtable(tmpTurns);
 
         sendStati(null, tmpRound);
 
 
         if (gameInfo.hasEnded(tmpRound)) {
-            turns.add(turn.getImmutableTurn());
+            turns.add(trick.getImmutableTrick());
             return GAME_ENDED;
         }
 
         if (roundPlayers.values().stream()
                 .allMatch(p -> p.cards.isEmpty())) {
-            turns.add(turn.getImmutableTurn());
+            turns.add(trick.getImmutableTrick());
             return ROUND_ENDED;
         }
 
-        turn = turn.nextTurn(turns);
+        if( trick.hasEnded() )  {
+            GenericImmutableTrick imTrick = trick.getImmutableTrick();
+            turns.add(imTrick);
+            IPlayerReference nextPlayer = imTrick.whoTakes(mode.getRankMode());
+            currentPlayerIdx = r.getIdxOfPlayer( nextPlayer.getRef() );
+            trick = new Trick(r.players.size());
+        } else {
+            currentPlayerIdx = r.next(currentPlayerIdx);
+        }
+
         Game.sleep();
 
-        currentPlayerIdx = (currentPlayerIdx + 1) % 4;
 
         sendStatus(tmpRound);
 
-        return turn.isFresh() ? TURN_ENDED : TURN_CONTINUE;
+        return trick.isFresh() ? TURN_ENDED : TURN_CONTINUE;
 
     }
 
@@ -118,14 +127,14 @@ class Round {
         for (RoundPlayer rp_ : roundPlayers.values()) {
             System.out.println("Sending stati");
             StatusPayload payload = new StatusPayload(
-                    rp_.cards, turn.log, rp_ == np, gameInfo.getPoints(tmpRound),
-                    mode, gameInfo.getPoints()
+                    rp_.cards, trick.log, rp_ == np, gameInfo.getPoints(tmpRound),
+                    mode, gameInfo.getLog()
             );
             rp_.player.sendToUser(new Status(payload));
         }
     }
 
-    private ImmutableRound toImmtable(List<ImmutbleTurn> roundLog) {
+    private ImmutableRound toImmtable(List<GenericImmutableTrick> roundLog) {
         return new ImmutableRound(initalCards, roundLog, mode);
     }
 

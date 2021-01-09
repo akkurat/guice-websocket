@@ -12,12 +12,12 @@ import java.util.stream.Collectors;
 
 public class ImmutableRound {
     public final Map<PlayerReference, List<JassCard>> initalCards;
-    public final List<ImmutbleTurn> turns;
+    private final List<GenericImmutableTrick> turns;
     public IParmeterizedRound parmeterizedRound;
 
     public ImmutableRound(
             Map<PlayerReference, List<JassCard>> initalCards,
-            List<ImmutbleTurn> turns,
+            List<GenericImmutableTrick> turns,
             IParmeterizedRound parmeterizedRound
     ) {
         this.initalCards = Map.copyOf(initalCards);
@@ -47,13 +47,27 @@ public class ImmutableRound {
         return between;
     }
 
+    public List<ImmutableTrick> getParametrizedTurns() {
+        return turns.stream()
+                .map(this::parametrized)
+                .collect(Collectors.toUnmodifiableList());
+    }
+
+    private ImmutableTrick parametrized(GenericImmutableTrick trick) {
+        return new ImmutableTrick(
+                trick.log,
+                trick.whoTakes(parmeterizedRound.getRankMode()),
+                trick.sum(parmeterizedRound.getCountMode())
+        );
+    }
+
     public Map<ITeam, Integer> getLastRoundBonus() {
-        if(turns.size() == 9 ) {
+        if (turns.size() == 9) {
             var rankMode = parmeterizedRound.getRankMode();
-            ImmutbleTurn lastTurn = turns.get(turns.size() - 1);
+            GenericImmutableTrick lastTurn = turns.get(turns.size() - 1);
             var team = lastTurn.whoTakes(rankMode).getTeam();
             return Map.of(team, 5);
-        } else  {
+        } else {
             return Map.of();
         }
 
@@ -61,7 +75,7 @@ public class ImmutableRound {
 
     public Map<ITeam, Integer> getTotalPointsByTeam() {
         Map<ITeam, Integer> map = getPointsByTeam();
-        getLastRoundBonus().forEach((k,v) -> map.merge(k,v,Integer::sum));
+        getLastRoundBonus().forEach((k, v) -> map.merge(k, v, Integer::sum));
         parmeterizedRound.getCountMode().transformRoundResult(map);
         return map;
     }

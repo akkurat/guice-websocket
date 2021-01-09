@@ -1,11 +1,29 @@
+<!-- {{log|json}} -->
+<div class="log">
 <table>
     <thead>
-        <th>A</th><th>B</th>
+        <th>A</th>
+        <th>B</th>
     </thead>
     <tbody>
-        <tr *ngFor="let r of log">
-            <td>{{r.points['Team: A']}}</td>
-            <td>{{r.points['Team: B']}}</td>
+        <tr (click)="showDetail(r)" *ngFor="let r of log">
+            <td>{{r.totalPointsByTeam['Team: A']}}</td>
+            <td>{{r.totalPointsByTeam['Team: B']}}</td>
+            <td><jas-roundinfo [info]="r.roundInfo"></jas-roundinfo></td>
         </tr>
-        </tbody>
-<ul>
+    </tbody>
+</table>
+
+<div *ngIf="details" class="round">
+    <div class="turn" *ngFor="let t of details.turns">
+        <div class="whoTakes">
+            <div>{{t.whoTakes.ref}}</div>
+            <div>{{t.sum}}</div>
+        </div>
+        <div class="move" *ngFor="let l of t.log">
+            <div>{{l.playerReference.ref}}</div>
+            <div class="card"><jas-card class="small" [card]="l.card"></jas-card></div>
+        </div>
+    </div>
+</div>
+</div>

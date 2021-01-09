@@ -36,7 +36,7 @@ export class CardComponent implements OnInit {
 
 }
 
-const colormap = {
+export const colormap = {
   "KREUZ": "♣",
   "SCHAUFEL": "♠",
   "HERZ": "♥",

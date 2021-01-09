@@ -1,4 +1,5 @@
 module ch.taburett.jass.game {
+    requires static lombok;
     requires transitive ch.taburett.jass.cards;
     exports ch.taburett.jass.game.impl to com.fasterxml.jackson.databind;
     exports ch.taburett.jass.game.impl.internal to com.fasterxml.jackson.databind;

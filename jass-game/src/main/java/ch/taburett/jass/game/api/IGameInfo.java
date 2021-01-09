@@ -15,4 +15,6 @@ public interface IGameInfo {
     Map<? extends ITeam, Integer> getPoints(ImmutableRound currentRound);
 
     List<? extends Map<? extends ITeam, ? extends Integer>> getPoints();
+
+    List<ImmutableRound> getLog();
 }

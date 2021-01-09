@@ -4,6 +4,7 @@ import ch.taburett.jass.cards.JassCard;
 import ch.taburett.jass.game.api.ITeam;
 import ch.taburett.jass.game.impl.internal.Team;
 import ch.taburett.jass.game.pub.log.ImmutableLogEntry;
+import ch.taburett.jass.game.pub.log.ImmutableRound;
 import ch.taburett.jass.game.spi.IParmeterizedRound;
 
 import java.util.List;
@@ -15,19 +16,20 @@ public class StatusPayload {
     public final boolean yourTurn;
     public final Map<? extends ITeam, ? extends Integer> points;
     public final IParmeterizedRound mode;
-    public final List<? extends Map<? extends ITeam, ? extends Integer>> gameInfoPoints;
+    public final List<ImmutableRound> gameInfoPoints;
 
     public StatusPayload(List<JassCard> availCards,
                          List<ImmutableLogEntry> roundCards,
                          boolean yourTurn,
                          Map<? extends ITeam, ? extends Integer> points,
                          IParmeterizedRound mode,
-                         List<?extends Map<?extends ITeam, ? extends Integer>>gameInfoPoints) {
+                         List<ImmutableRound> gameInfoPoints) {
         this.availCards = List.copyOf(availCards);
         this.roundCards = List.copyOf(roundCards);
         this.yourTurn = yourTurn;
         this.points = points;
         this.mode = mode;
-        this.gameInfoPoints = gameInfoPoints;
+        this.gameInfoPoints =
+                gameInfoPoints;
     }
 }

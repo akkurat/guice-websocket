@@ -3,9 +3,11 @@ package ch.taburett.jass.game.spi;
 import ch.taburett.jass.cards.JassCard;
 import ch.taburett.jass.game.api.ITeam;
 import ch.taburett.jass.game.impl.internal.Team;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import java.util.Map;
 
+@JsonSerialize(as=ICountModeParametrized.class)
 public class CountModeParametrizedWrapper implements ICountModeParametrized {
     private final ICountModeParametrized mode;
 

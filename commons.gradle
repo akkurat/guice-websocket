@@ -6,16 +6,16 @@ repositories {
 }
 
 tasks.withType(JavaCompile) {
-    options.compilerArgs += "--enable-preview"
+//    options.compilerArgs += "--enable-preview"
     project.sourceCompatibility = '11'
     project.targetCompatibility = '11'
 }
-tasks.withType(Test) {
-    jvmArgs += "--enable-preview"
-}
-tasks.withType(JavaExec) {
-    jvmArgs += "--enable-preview"
-}
+//tasks.withType(Test) {
+//    jvmArgs += "--enable-preview"
+//}
+//tasks.withType(JavaExec) {
+//    jvmArgs += "--enable-preview"
+//}
 
 java {
     modularity.inferModulePath = true
