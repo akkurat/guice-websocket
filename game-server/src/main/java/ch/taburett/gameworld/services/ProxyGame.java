@@ -2,11 +2,13 @@ package ch.taburett.gameworld.services;
 
 import ch.taburett.jass.game.api.IGame;
 import ch.taburett.jass.game.api.IPlayerReference;
+import ch.taburett.jass.game.spi.events.server.IServerMessage;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -76,9 +78,27 @@ public class ProxyGame {
         return nextFreeReference.isPresent();
    }
 
+    private void sendUserList() {
+
+        var map = userList.entrySet().stream()
+                .collect(Collectors.toUnmodifiableMap(
+                       e -> e.getKey().getRef(),
+                        e-> e.getValue().getUserName()
+                ));
+
+        userList.values()
+                .forEach(proxyUser -> {
+                    var m = new UserMapEvent(proxyUser.getReference(),
+                            new UserMapEvent.UserPayload(map, proxyUser.getReference().getRef() )
+                    );
+                    proxyUser.receiveServerMessage(m);
+                });
+    }
+
 
     private void addPlayer(ProxyUser user) {
         userList.put(user.getReference(), user);
+        sendUserList();
         if(userList.size() == gameInfo.maxPlayers())
         {
             executor.execute(() -> {

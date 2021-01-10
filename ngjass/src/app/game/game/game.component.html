@@ -1,4 +1,7 @@
 <div>
+    {{users|json}}
+</div>
+<div>
     <ul>
         <li (click)="selectMode(modus.key)" *ngFor="let modus of modi|keyvalue">
             {{modus|json}}

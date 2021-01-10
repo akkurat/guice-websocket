@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static ch.taburett.jass.game.api.EGameState.*;
@@ -45,9 +44,7 @@ public class Game implements IGameInfo, ch.taburett.jass.game.api.IGame {
     private IRoundSupplier roundSupplier;
     private EGameState state = FRESH;
 
-    private int currentPlayerIdx = 0;
     private Round round;
-    int selectingPlayer = 0;
     private ArrayList<ImmutableRound> rounds = new ArrayList<>();
 
 
@@ -55,6 +52,7 @@ public class Game implements IGameInfo, ch.taburett.jass.game.api.IGame {
     private final ExecutorService e;
     private RoundPreparer roundPreparer;
     private Thread lastThread;
+    private RoundPlayers roundPlayers;
 
     public Game(IRoundSupplier roundSupplier) {
 
@@ -81,15 +79,16 @@ public class Game implements IGameInfo, ch.taburett.jass.game.api.IGame {
     }
 
 
-    private void prepareRound(int pos) {
+    private void prepareRound(PlayerReference pl) {
         checkThread();
         state = PREPARE_ROUND;
 
         Map<String, PresenterMode> modes = roundSupplier.getModes(rounds);
 
-        // TODO: depending on player
-        roundPreparer = new RoundPreparer(modes,r, this::startRound);
-        roundPreparer.prepare(selectingPlayer);
+        roundPlayers = new RoundPlayers(r,pl);
+
+        roundPreparer = new RoundPreparer(modes, this::startRound,roundPlayers);
+        roundPreparer.prepare();
 
     }
 
@@ -97,7 +96,7 @@ public class Game implements IGameInfo, ch.taburett.jass.game.api.IGame {
     private void startRound(int pos, IParmeterizedRound mode) {
         checkThread();
         state = ROUND;
-        round = new Round(r, this, mode);
+        round = new Round(roundPlayers, this, mode);
         round.start(pos);
     }
 
@@ -160,14 +159,15 @@ public class Game implements IGameInfo, ch.taburett.jass.game.api.IGame {
      * @param playerReference
      */
     private void accept_(IUserEvent<?> event, PlayerReference playerReference) {
+        checkThread();
         if (state == FINISHED) {
-            playerReference.sendToUser(new IllegalState("Game is FINISHED "));
+            playerReference.sendToUser(new IllegalState(playerReference,"Game is FINISHED "));
         }
         else if( state == PREPARE_ROUND ) {
             if( event instanceof DecideEvent ) {
-                roundPreparer.accept((DecideEvent) event);
+                roundPreparer.accept((DecideEvent) event, playerReference);
             } else {
-                playerReference.sendToUser(new IllegalState("Only Decision"));
+                playerReference.sendToUser(new IllegalState(playerReference, "Only Decision"));
             }
         }
         else if( state == ROUND ) {
@@ -179,20 +179,20 @@ public class Game implements IGameInfo, ch.taburett.jass.game.api.IGame {
                     rounds.add(round.toImmtable());
                 } else if (finished == ROUND_ENDED) {
                     rounds.add(round.toImmtable());
-                    selectingPlayer += (selectingPlayer + 1) % 4;
-                    prepareRound(selectingPlayer);
+                    PlayerReference pl = roundPlayers.next();
+                    prepareRound(pl);
                 }
                 System.out.println(new RoundLog(rounds).getPoints());
 
             } else {
-                playerReference.sendToUser(new IllegalState("No Round"));
+                playerReference.sendToUser(new IllegalState(playerReference, "No Round"));
             }
         }
     }
 
 
     private void start_() {
-        prepareRound(selectingPlayer);
+        prepareRound(r.A1);
     }
     private void checkThread() {
         if (Thread.currentThread() != lastThread) {

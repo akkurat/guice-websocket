@@ -26,6 +26,7 @@ export class GameComponent implements OnInit, OnDestroy {
   h: NodeJS.Timeout;
   yourTurn = '';
   waiting: any;
+  users: any;
 
 
   constructor(
@@ -51,9 +52,15 @@ export class GameComponent implements OnInit, OnDestroy {
     if (obj.code === 'TURN' || obj.code === 'STATUS') {
       this.handleTurn(obj.payload);
     } else if (obj.code === 'MODE') {
-      this.modi = obj.payload;
+      this.handleModeEvent(obj.payload)
+    } else if (obj.code ==='USERS') {
+      this.users = obj.payload
     }
     this.gameEvents.push(payload)
+  }
+  handleModeEvent(payload: any) {
+      this.modi = payload.modes;
+      this.cards = payload.cards
   }
 
   private handleTurn(p: any) {
@@ -86,7 +93,7 @@ export class GameComponent implements OnInit, OnDestroy {
       setTimeout(() => {
         this.popCards()
         this.createTimeout()
-      }, 1000)
+      }, 10)
     }
   }
 

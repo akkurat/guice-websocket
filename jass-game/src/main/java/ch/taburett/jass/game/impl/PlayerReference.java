@@ -5,21 +5,24 @@ import ch.taburett.jass.game.impl.internal.Team;
 import ch.taburett.jass.game.api.IPlayerReference;
 import ch.taburett.jass.game.spi.events.server.IServerMessage;
 import ch.taburett.jass.game.spi.events.user.IUserEvent;
+import lombok.EqualsAndHashCode;
 
 import java.util.function.Consumer;
 
+@EqualsAndHashCode
 public class PlayerReference implements IPlayerReference {
 
     private Game game;
+    private final String ref;
+    private Team team;
+    @EqualsAndHashCode.Exclude
+    private Consumer<IServerMessage<?>> proxy;
 
     @Override
     public String getRef() {
         return ref;
     }
 
-    private final String ref;
-    private Team team;
-    private Consumer<IServerMessage<?>> proxy;
 
     public PlayerReference(Game game, String ref, Team team) {
         this.ref = ref;

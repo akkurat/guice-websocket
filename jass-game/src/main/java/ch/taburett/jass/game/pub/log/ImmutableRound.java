@@ -11,16 +11,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ImmutableRound {
-    public final Map<PlayerReference, List<JassCard>> initalCards;
     private final List<GenericImmutableTrick> turns;
     public IParmeterizedRound parmeterizedRound;
 
     public ImmutableRound(
-            Map<PlayerReference, List<JassCard>> initalCards,
             List<GenericImmutableTrick> turns,
             IParmeterizedRound parmeterizedRound
     ) {
-        this.initalCards = Map.copyOf(initalCards);
         this.turns = List.copyOf(turns);
         this.parmeterizedRound = parmeterizedRound;
     }

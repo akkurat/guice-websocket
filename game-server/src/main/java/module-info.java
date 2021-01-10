@@ -21,4 +21,5 @@ module guice.websocket.jass.together.main {
     requires spring.security.core;
     requires org.apache.tomcat.embed.core;
     requires spring.security.web;
+    requires static lombok;
 }

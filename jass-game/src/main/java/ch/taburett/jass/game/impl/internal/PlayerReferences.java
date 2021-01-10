@@ -9,6 +9,7 @@ import java.util.List;
 /**
  * Table
  */
+// TODO: rename to Table
 class PlayerReferences {
     private final Game game;
     public final Team A = new Team("A");
@@ -30,22 +31,4 @@ class PlayerReferences {
         players = List.of(A1, B1, A2, B2);
     }
 
-    /**
-     * By Checking ref String
-     * @param ref
-     */
-    int getIdxOfPlayer(String ref) {
-        int i=0;
-        for(PlayerReference p : players) {
-            if(p.getRef().equals(ref)) {
-                return i;
-            }
-            i++;
-        }
-        return -1;
-    }
-
-    public int next(int currentPlayerIdx) {
-        return (currentPlayerIdx +1)% players.size();
-    }
 }

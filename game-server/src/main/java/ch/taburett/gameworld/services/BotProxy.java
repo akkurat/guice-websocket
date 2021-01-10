@@ -38,7 +38,7 @@ public class BotProxy {
             }
         } else if ( msg instanceof ModeEvent) {
             ModeEvent e = (ModeEvent) msg;
-            var keys = new ArrayList<>(e.getPayload().keySet());
+            var keys = new ArrayList<>(e.getPayload().modes.keySet());
             var key =  keys.get(ThreadLocalRandom.current().nextInt(keys.size()));
 
             sink.accept(new DecideEvent(new DecideEvent.DecideParams(key,null)));

@@ -26,6 +26,7 @@ public class ObenAbe implements IParmeterizedRound {
         this.faktor = faktor;
         this.mode = new ObenAbeMode();
     }
+
     @Override
     public int getFactor() {
         return faktor;
@@ -46,7 +47,7 @@ public class ObenAbe implements IParmeterizedRound {
         return "Oben-Abe " + faktor + "x";
     }
 
-    public static class ObenAbeMode implements IRankModeParametrized, ICountModeParametrized{
+    public static class ObenAbeMode implements IRankModeParametrized, ICountModeParametrized {
         private final Map<JassCard, Integer> valueMap;
 
         public ObenAbeMode() {
@@ -55,40 +56,43 @@ public class ObenAbe implements IParmeterizedRound {
         }
 
         private int mapCardValue(JassCard c) {
-        JassValue v = c.value;
-        if (v == JassValue._8) {
-            return 8;
+            JassValue v = c.value;
+            if (v == JassValue._8) {
+                return 8;
+            }
+            Integer count = commonCountMap.get(v);
+            return count != null ? count : 0;
         }
-        Integer count = commonCountMap.get(v);
-        return count != null ? count : 0;
-    }
 
 
-    @Override
-    public Map<JassCard, Integer> getCountMap() {
-        return valueMap;
-    }
-
-
-    @Override
-    public int getRank(JassCard c, JassColor roundColor) {
-        int baseRank = c.value.rank;
-        if (roundColor == c.color) {
-            return baseRank;
+        @Override
+        public Map<JassCard, Integer> getCountMap() {
+            return valueMap;
         }
-        return 0;
-    }
+
+
+        @Override
+        public int getRank(JassCard c, JassColor roundColor) {
+            int baseRank = c.value.rank;
+            if (roundColor == c.color) {
+                return baseRank;
+            }
+            return 0;
+        }
 
         @Override
         public List<JassCard> legalCards(List<JassCard> trick, List<JassCard> hand) {
-            if(trick.isEmpty()) {
+            return legalCards_(trick,hand);
+        }
+        public static List<JassCard> legalCards_(List<JassCard> trick, List<JassCard> hand) {
+            if (trick.isEmpty()) {
                 return hand;
             }
             JassColor color = trick.get(0).color;
             var handByColor = hand.stream()
-                    .filter(c -> c.color == color )
+                    .filter(c -> c.color == color)
                     .collect(Collectors.toList());
-            if( handByColor.isEmpty() ) {
+            if (handByColor.isEmpty()) {
                 return hand;
             } else {
                 return handByColor;
