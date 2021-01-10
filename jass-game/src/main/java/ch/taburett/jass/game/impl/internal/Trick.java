@@ -8,6 +8,7 @@ import ch.taburett.jass.game.pub.log.GenericImmutableTrick;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Jass Turn
@@ -45,5 +46,11 @@ public class Trick {
                 "log=" + log +
                 ", numberPlayers=" + numberPlayers +
                 '}';
+    }
+
+    public List<JassCard> getCards() {
+        return log.stream()
+                .map(ImmutableLogEntry::getCard)
+                .collect(Collectors.toList());
     }
 }

@@ -1,5 +1,5 @@
 import { StompService } from '@/stomp.service';
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, ErrorHandler, Input, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { asyncScheduler, queueScheduler } from 'rxjs';
 import { QueueScheduler } from 'rxjs/internal/scheduler/QueueScheduler';
@@ -15,7 +15,7 @@ export class GameComponent implements OnInit, OnDestroy {
   params: any;
   gameSubscription: Subscription;
   gameEvents = [];
-  cards: ICard[] = []
+  cards: ICardLegal[] = []
   table = []
   points: any;
   mode: any;
@@ -24,7 +24,8 @@ export class GameComponent implements OnInit, OnDestroy {
   cardBuffer = []
   lastCardEvent: number = 0;
   h: NodeJS.Timeout;
-  yourTurn = '';  
+  yourTurn = '';
+  waiting: any;
 
 
   constructor(
@@ -56,7 +57,7 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   private handleTurn(p: any) {
-    this.cards = p.availCards;
+    this.cards = this.enrichCards(p.availCards,p.legalCards)
     this.addToTable(p.roundCards);
     this.points = p.points;
     this.infopoints = p.gameInfoPoints;
@@ -65,30 +66,28 @@ export class GameComponent implements OnInit, OnDestroy {
     this.yourTurn = p.yourTurn;
   }
   private addToTable(roundCards: any) {
-    this.cardBuffer.push(roundCards);
-    if (this.cardBuffer.length == 1) {
-      if (Date.now() - this.lastCardEvent > 6000) {
-        this.popCards()
-      } else {
-        this.createTimeout( )
-      }
+     if (roundCards.length === 0 || this.cardBuffer.length > 0 ) {
+       this.waiting = true
+       this.cardBuffer.push(roundCards);
+    } else {
+      this.table = roundCards
     }
   }
+
   private popCards() {
-    if(this.cardBuffer.length > 0 ) {
+    if (this.cardBuffer.length > 0) {
       this.lastCardEvent = Date.now()
       this.table = this.cardBuffer.shift()
     }
   }
 
   private createTimeout() {
-    const to = this.cardBuffer[0].length == 0 ? 6000 : 200
-    this.h = setTimeout(() => {
-      this.popCards()
-      if (this.cardBuffer.length > 0) {
+    if (this.cardBuffer.length > 0) {
+      setTimeout(() => {
+        this.popCards()
         this.createTimeout()
-      }
-    }, to)
+      }, 1000)
+    }
   }
 
   get gameEventsString() {
@@ -96,7 +95,9 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   playCard(card) {
-    this.stomp.send('/app/cmds/play/' + this.params.value.id, {}, JSON.stringify({ code: 'PLAY', payload: card }))
+    if(this.canPlay) {
+      this.stomp.send('/app/cmds/play/' + this.params.value.id, {}, JSON.stringify({ code: 'PLAY', payload: card }))
+    }
   }
 
   selectMode(mode) {
@@ -108,14 +109,27 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   jumpTimeOut() {
-    if(this.h) {
-      window.clearTimeout( this.h )
-      this.popCards()
-      if( this.cardBuffer.length > 0 ) {
-        this.createTimeout()
-      }
-    }
+    this.createTimeout()
+    this.waiting = false
   }
+
+  get canPlay() {
+    return this.cardBuffer.length == 0;
+  }
+
+  private enrichCards(hand: ICard[], legal: ICard[]): ICardLegal[]{
+    const lookup = new Set(legal.map(this.mapCard))
+    return hand.map(c => ({...c, legal: lookup.has(this.mapCard(c))}))
+  }
+  private mapCard(c: ICard): string {
+    return c.color+c.value;
+  }
+}
+
+
+
+export interface ICardLegal extends ICard{
+  legal: boolean
 }
 
 

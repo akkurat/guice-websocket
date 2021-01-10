@@ -144,11 +144,11 @@ public class Game implements IGameInfo, ch.taburett.jass.game.api.IGame {
     }
 
     public static void sleep() {
-        try {
-            Thread.sleep(1);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            Thread.sleep(1);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
     }
 
     public void accept(IUserEvent<?> event, PlayerReference playerReference) {

@@ -127,9 +127,11 @@ class Round {
         for (RoundPlayer rp_ : roundPlayers.values()) {
             System.out.println("Sending stati");
             StatusPayload payload = new StatusPayload(
-                    rp_.cards, trick.log, rp_ == np, gameInfo.getPoints(tmpRound),
-                    mode, gameInfo.getLog()
-            );
+                    rp_.cards,
+                    mode.getRankMode().legalCards(trick.getCards(), rp_.cards),
+                    trick.log, rp_ == np,
+                    gameInfo.getPoints(tmpRound), mode,
+                    gameInfo.getLog());
             rp_.player.sendToUser(new Status(payload));
         }
     }

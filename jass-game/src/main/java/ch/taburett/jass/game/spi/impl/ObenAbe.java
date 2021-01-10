@@ -9,6 +9,7 @@ import ch.taburett.jass.game.spi.IParmeterizedRound;
 import ch.taburett.jass.game.spi.IRankModeParametrized;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -77,5 +78,21 @@ public class ObenAbe implements IParmeterizedRound {
         }
         return 0;
     }
+
+        @Override
+        public List<JassCard> legalCards(List<JassCard> trick, List<JassCard> hand) {
+            if(trick.isEmpty()) {
+                return hand;
+            }
+            JassColor color = trick.get(0).color;
+            var handByColor = hand.stream()
+                    .filter(c -> c.color == color )
+                    .collect(Collectors.toList());
+            if( handByColor.isEmpty() ) {
+                return hand;
+            } else {
+                return handByColor;
+            }
+        }
     }
 }

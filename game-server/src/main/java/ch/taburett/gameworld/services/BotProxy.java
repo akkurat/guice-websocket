@@ -28,12 +28,12 @@ public class BotProxy {
             Status yt = (Status) msg;
             StatusPayload pl = yt.getPayload();
             if( pl.yourTurn ) {
-                try {
-                    Thread.sleep(1);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                JassCard card = pl.availCards.get(0);
+//                try {
+//                    Thread.sleep(1);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+                JassCard card = pl.legalCards.get(0);
                 sink.accept(new Play(card));
             }
         } else if ( msg instanceof ModeEvent) {

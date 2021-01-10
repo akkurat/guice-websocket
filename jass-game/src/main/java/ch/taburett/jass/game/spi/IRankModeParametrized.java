@@ -3,6 +3,8 @@ package ch.taburett.jass.game.spi;
 import ch.taburett.jass.cards.JassCard;
 import ch.taburett.jass.cards.JassColor;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
@@ -35,4 +37,7 @@ public interface IRankModeParametrized {
 
     int getRank(JassCard c, JassColor roundColor);
 
+    default List<JassCard> legalCards(List<JassCard> trick, List<JassCard> hand) {
+        return hand;
+    };
 }

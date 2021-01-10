@@ -1,9 +1,11 @@
 package ch.taburett.jass.game.spi.impl;
 
-import ch.taburett.jass.cards.JassCard;
-import ch.taburett.jass.cards.JassColor;
-import ch.taburett.jass.cards.JassValue;
+import ch.taburett.jass.cards.*;
 import ch.taburett.jass.game.spi.IRankModeParametrized;
+
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class TrumpfRank implements IRankModeParametrized {
 
@@ -39,5 +41,28 @@ public class TrumpfRank implements IRankModeParametrized {
         return "TrumpfRank{" +
                 "trumpf=" + trumpf +
                 '}';
+    }
+
+    @Override
+    public List<JassCard> legalCards(List<JassCard> trick, List<JassCard> hand) {
+
+        if(trick.isEmpty()) {
+            return hand;
+        }
+        JassCard trumpfbube = DeckUtil.getInstance().getJassCard(trumpf, JassValue._B);
+        JassColor color = trick.get(0).color;
+        Predicate<JassCard> jassCardPredicate = c -> c.color == color;
+        Predicate<JassCard> filter = jassCardPredicate.or( c-> c.color == trumpf);
+        var handByColor = hand.stream()
+                .filter(filter)
+                .collect(Collectors.toList());
+        if( handByColor.size() == 1 && handByColor.get(0) == trumpfbube ) {
+            return hand;
+        }
+        if( handByColor.isEmpty() ) {
+            return hand;
+        } else {
+            return handByColor;
+        }
     }
 }

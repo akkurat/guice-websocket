@@ -1,10 +1,8 @@
 <div>
     <ul>
-        <li 
-        (click)="selectMode(modus.key)" 
-        *ngFor="let modus of modi|keyvalue">
-        {{modus|json}}
-    </li>
+        <li (click)="selectMode(modus.key)" *ngFor="let modus of modi|keyvalue">
+            {{modus|json}}
+        </li>
     </ul>
 </div>
 <jas-log [log]="infopoints"></jas-log>
@@ -12,20 +10,22 @@
     <!-- {{points|json}} -->
     <jas-roundinfo [info]="mode"></jas-roundinfo>
 </div>
-<div class="deck">
+<!-- TODO: class table -->
+<div class="deck"(click)="jumpTimeOut()">
     <div *ngFor="let c of table">
         <div>{{c.playerReference.ref}}</div>
         <jas-card [card]="c.card"></jas-card>
     </div>
-</div>
-<div class="deck">
-    <div *ngFor="let card of cards">
-        <jas-card [card]="card" (click)="playCard(card)"></jas-card>
+    <div>
+        <a *ngIf="waiting" >Click to continue...</a>
+        <div *ngIf="yourTurn && canPlay">Your Turn</div>
     </div>
 </div>
-<div>{{yourTurn}}</div>
-<div>
-    <button (click)="jumpTimeOut()">Continue...</button>
+<div [ngClass]="{'deck': true, 'disabled': !canPlay}">
+    <div *ngFor="let card of cards" [ngClass]="{illegal: !card.legal, legal: card.legal}">
+        {{card.legal}}
+        <jas-card [card]="card" (click)="playCard(card)"></jas-card>
+    </div>
 </div>
 <div>
     {{params|json}}

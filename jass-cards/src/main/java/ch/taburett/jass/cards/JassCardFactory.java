@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class JassCardFactory {
     ConcurrentHashMap<String, JassCard> cards = new ConcurrentHashMap<>();
-    public JassCard getJassCard(JassColor c, JassValue v) {
+    JassCard getJassCard(JassColor c, JassValue v) {
         var key = getKey(c,v);
         return cards.computeIfAbsent( key, k -> new JassCard(c,v));
     }

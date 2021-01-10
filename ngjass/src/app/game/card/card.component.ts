@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { ICardLegal } from '../game/game.component';
 import { ICard } from '../jassinterfaces';
 
 @Component({
@@ -8,7 +9,7 @@ import { ICard } from '../jassinterfaces';
 })
 export class CardComponent implements OnInit {
 
-  @Input() card: ICard
+  @Input() card: ICardLegal
 
   get blackOrRed() {
     switch (this.card.color) {

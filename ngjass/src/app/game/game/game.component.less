@@ -1,8 +1,23 @@
 .deck {
     display: flex;
     flex-flow: row;
+    align-items: center;
+    
     div {
         margin: 10px;
+    }
+
+    &.disabled {
+        pointer-events: none;
+        filter: blur(10px);
+    }
+    .illegal {
+        pointer-events: none;
+        filter:brightness(0.9)
+    }
+    
+    .legal {
+        cursor: pointer;
     }
 }
 

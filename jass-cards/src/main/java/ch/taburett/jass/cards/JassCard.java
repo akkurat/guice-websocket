@@ -1,5 +1,7 @@
 package ch.taburett.jass.cards;
 
+import java.util.Comparator;
+
 public class JassCard {
 
     public final JassColor color;
@@ -16,5 +18,10 @@ public class JassCard {
                 "color=" + color +
                 ", value=" + value +
                 '}';
+    }
+
+    public static Comparator<JassCard> c() {
+        return Comparator.comparingInt( (JassCard c) -> c.color.sort )
+                .thenComparingInt( (JassCard c) -> c.value.rank);
     }
 }
