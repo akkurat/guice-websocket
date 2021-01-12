@@ -12,6 +12,8 @@ export class RoundinfoComponent implements OnChanges {
   factor: number;
   color: {};
   caption: string;
+  currentRound: string
+  redundant: boolean;
   constructor() { }
   ngOnChanges(changes: SimpleChanges): void {
     if(this._info) {
@@ -26,6 +28,9 @@ export class RoundinfoComponent implements OnChanges {
       //     this.color = colormap[this._info.color]
       //   }
       this.caption = i.caption;
+      this.currentRound = i.trickCaption
+
+      this.redundant = this.caption == this.currentRound
 
     }
   }
@@ -35,8 +40,8 @@ export class RoundinfoComponent implements OnChanges {
 }
 
 export interface IRoundInfo {
+  trickCaption: string;
   semanticInfo?: any;
-  color?: string;
   factor: number;
   caption: string;
 }

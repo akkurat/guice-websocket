@@ -30,4 +30,9 @@ public class CountModeParametrizedWrapper implements ICountModeParametrized {
     public Map<ITeam, Integer> transformRoundResult(Map<ITeam, Integer> result) {
         return mode.transformRoundResult(result);
     }
+
+    @Override
+    public String getCaption() {
+        return mode.getCaption();
+    }
 }

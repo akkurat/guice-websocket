@@ -1,29 +1,33 @@
 <!-- {{log|json}} -->
 <div class="log">
-<table>
-    <thead>
-        <th>A</th>
-        <th>B</th>
-    </thead>
-    <tbody>
-        <tr (click)="showDetail(r)" *ngFor="let r of log">
-            <td>{{r.totalPointsByTeam['Team: A']}}</td>
-            <td>{{r.totalPointsByTeam['Team: B']}}</td>
-            <td><jas-roundinfo [info]="r.roundInfo"></jas-roundinfo></td>
-        </tr>
-    </tbody>
-</table>
+    <table>
+        <thead>
+            <th>A</th>
+            <th>B</th>
+        </thead>
+        <tbody>
+            <tr (click)="showDetail(r)" *ngFor="let r of log">
+                <td>{{r.totalPointsByTeam['Team: A']}}</td>
+                <td>{{r.totalPointsByTeam['Team: B']}}</td>
+                <!-- <td><jas-roundinfo [info]="r.roundInfo"></jas-roundinfo></td> -->
+                <td>{{r.roundInfo.caption}}</td>
+            </tr>
+        </tbody>
+    </table>
 
-<div *ngIf="details" class="round">
-    <div class="turn" *ngFor="let t of details.turns">
-        <div class="whoTakes">
-            <div>{{t.whoTakes.ref}}</div>
-            <div>{{t.sum}}</div>
-        </div>
-        <div class="move" *ngFor="let l of t.log">
-            <div>{{l.playerReference.ref}}</div>
-            <div class="card"><jas-card class="small" [card]="l.card"></jas-card></div>
+    <div *ngIf="details" class="round">
+        <div class="turn" *ngFor="let t of details.turns">
+            <div class="whoTakes">
+                <div>{{t.whoTakes.ref}}</div>
+                <div>{{t.sum}}</div>
+                <div *ngIf="details.roundInfo.caption!=t.trickCaption">{{t.trickCaption}}</div>
+            </div>
+            <div class="move" *ngFor="let l of t.log">
+                <div>{{l.playerReference.ref}}</div>
+                <div class="card">
+                    <jas-card class="small" [card]="l.card"></jas-card>
+                </div>
+            </div>
         </div>
     </div>
-</div>
 </div>

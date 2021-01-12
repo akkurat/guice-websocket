@@ -10,5 +10,6 @@ public class ImmutableTrick {
     private final List<ImmutableLogEntry> log;
     private final IPlayerReference whoTakes;
     private final int sum;
+    private final String trickCaption   ;
 
 }

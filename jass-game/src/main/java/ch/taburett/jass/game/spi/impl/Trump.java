@@ -21,12 +21,12 @@ public class Trump implements IParmeterizedRound {
     }
 
     @Override
-    public ICountModeParametrized getCountMode() {
+    public ICountModeParametrized getCountMode(int round) {
         return trumpfCount;
     }
 
     @Override
-    public IRankModeParametrized getRankMode() {
+    public IRankModeParametrized getRankMode(int round) {
         return trumpfRank;
     }
 

@@ -4,8 +4,8 @@ import ch.taburett.jass.cards.*;
 import ch.taburett.jass.game.spi.IRankModeParametrized;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class TrumpfRank implements IRankModeParametrized {
@@ -20,7 +20,6 @@ public class TrumpfRank implements IRankModeParametrized {
         this.trumpf = trumpf;
     }
 
-    @Override
     public int getRank(JassCard c, JassColor roundColor) {
         if(c.color == trumpf ) {
             if(c.value == JassValue._B) {
@@ -46,15 +45,12 @@ public class TrumpfRank implements IRankModeParametrized {
 
     @Override
     public List<JassCard> legalCards(List<JassCard> trick, List<JassCard> hand) {
-
-
-
         if(trick.isEmpty()) {
             return hand;
         }
         JassCard trumpfbube = DeckUtil.getInstance().getJassCard(trumpf, JassValue._B);
         JassColor color = trick.get(0).color;
-        List<JassCard> handByColor = new ArrayList<>(ObenAbe.ObenAbeMode.legalCards_(trick, hand));
+        List<JassCard> handByColor = new ArrayList<>(LeihUtil.legalCards_(trick, hand));
         if(color != trumpf) {
             handByColor.addAll(hand.stream().filter(c -> c.color==trumpf).collect(Collectors.toList()));
         }
@@ -62,5 +58,15 @@ public class TrumpfRank implements IRankModeParametrized {
             return hand;
         }
         return handByColor;
+    }
+
+    @Override
+    public String getCaption() {
+        return trumpf + " Trumpf";
+    }
+
+    @Override
+    public Comparator<? super JassCard> getComparator(JassColor roundColor) {
+        return Comparator.comparingInt(c -> getRank(c,roundColor));
     }
 }

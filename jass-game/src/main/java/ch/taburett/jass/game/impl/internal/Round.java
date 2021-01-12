@@ -76,9 +76,10 @@ class Round {
 
         if( trick.hasEnded() )  {
             GenericImmutableTrick imTrick = trick.getImmutableTrick();
+            IPlayerReference nextPlayer = imTrick.whoTakes(mode.getRankMode(turnLog.size()));
             turnLog.add(imTrick);
-            IPlayerReference nextPlayer = imTrick.whoTakes(mode.getRankMode());
             trick = new Trick(roundPlayers.size());
+            roundPlayers.setPlayer(nextPlayer);
         } else {
             roundPlayers.next();
         }
@@ -104,9 +105,10 @@ class Round {
             System.out.println("Sending stati");
             StatusPayload payload = new StatusPayload(
                     rp_.cards,
-                    mode.getRankMode().legalCards(trick.getCards(), rp_.cards),
+                    mode.getRankMode(turnLog.size()).legalCards(trick.getCards(), rp_.cards),
                     trick.log, rp_ == np,
-                    gameInfo.getPoints(tmpRound), mode,
+                    gameInfo.getPoints(tmpRound),
+                    mode.getTrickMode(turnLog.size()),
                     gameInfo.getLog());
             rp_.player.sendToUser(new Status(rp_.player,payload));
         }

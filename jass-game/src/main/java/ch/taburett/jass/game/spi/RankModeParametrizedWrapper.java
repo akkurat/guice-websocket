@@ -7,7 +7,7 @@ import java.util.Comparator;
 import java.util.List;
 
 public class RankModeParametrizedWrapper implements IRankModeParametrized {
-    private IRankModeParametrized mode;
+    protected IRankModeParametrized mode;
 
     @Override
     public JassCard getMaxCard(List<JassCard> cards) {
@@ -25,8 +25,8 @@ public class RankModeParametrizedWrapper implements IRankModeParametrized {
     }
 
     @Override
-    public int getRank(JassCard c, JassColor roundColor) {
-        return mode.getRank(c, roundColor);
+    public String getCaption() {
+        return mode.getCaption();
     }
 
     public RankModeParametrizedWrapper(IRankModeParametrized mode ) {

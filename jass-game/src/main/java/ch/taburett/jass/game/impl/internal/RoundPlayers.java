@@ -1,7 +1,9 @@
 package ch.taburett.jass.game.impl.internal;
 
 import ch.taburett.jass.cards.DeckUtil;
+import ch.taburett.jass.game.api.IPlayerReference;
 import ch.taburett.jass.game.impl.PlayerReference;
+import com.google.common.collect.ImmutableMap;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,7 +27,7 @@ public class RoundPlayers {
         var cards = new ArrayList<>(deck);
         Collections.shuffle(cards);
 
-        var cardsPerPlayer = Map.of(
+        var cardsPerPlayer = ImmutableMap.of(
                 r.A1, cards.subList(0, 9),
                 r.B1, cards.subList(9, 18),
                 r.A2, cards.subList(18, 27),
@@ -34,8 +36,8 @@ public class RoundPlayers {
 
         this.rpByRef = cardsPerPlayer.entrySet().stream()
                 .map(e -> new RoundPlayer(e.getKey(), e.getValue()))
-                .collect(toUnmodifiableMap(rp -> rp.player, rp -> rp));
-        this.refByRp = rpByRef.entrySet().stream().collect(Collectors.toUnmodifiableMap(Map.Entry::getValue, Map.Entry::getKey));
+                .collect(ImmutableMap.toImmutableMap(rp -> rp.player, rp -> rp));
+        this.refByRp = rpByRef.entrySet().stream().collect(ImmutableMap.toImmutableMap(Map.Entry::getValue, Map.Entry::getKey));
 
         this.references = List.copyOf(rpByRef.keySet());
         this.rPlayers = List.copyOf(rpByRef.values());
@@ -82,5 +84,13 @@ public class RoundPlayers {
 
     public List<RoundPlayer> roundPlayers() {
         return rPlayers;
+    }
+
+    public void setPlayer(IPlayerReference nextPlayer) {
+        if(references.contains(nextPlayer)) {
+            idx = references.indexOf(nextPlayer);
+        }else {
+            throw new IllegalArgumentException("Not Valid");
+        }
     }
 }

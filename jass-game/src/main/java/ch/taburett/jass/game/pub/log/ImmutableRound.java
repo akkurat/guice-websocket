@@ -1,14 +1,17 @@
 package ch.taburett.jass.game.pub.log;
 
-import ch.taburett.jass.cards.JassCard;
 import ch.taburett.jass.game.api.IPlayerReference;
 import ch.taburett.jass.game.api.ITeam;
-import ch.taburett.jass.game.impl.PlayerReference;
+import ch.taburett.jass.game.spi.ICountModeParametrized;
 import ch.taburett.jass.game.spi.IParmeterizedRound;
+import ch.taburett.jass.game.spi.IRankModeParametrized;
+import com.google.common.collect.ImmutableMap;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class ImmutableRound {
     private final List<GenericImmutableTrick> turns;
@@ -23,49 +26,64 @@ public class ImmutableRound {
     }
 
     public Map<IPlayerReference, Integer> getPointsByPlayer() {
-        var mode = parmeterizedRound.getCountMode();
+        var pointsByTeam = new HashMap<IPlayerReference,Integer>();
 
-        var between = turns.stream()
-                .collect(
-                        Collectors.groupingBy(t -> t.whoTakes(parmeterizedRound.getRankMode()),
-                                Collectors.summingInt(t -> t.sum(mode))
-                        ));
-        return between;
+        for(int i=0; i<turns.size();i++) {
+
+            GenericImmutableTrick turn = turns.get(i);
+
+            var countMode = parmeterizedRound.getCountMode(i);
+            var rankMode = parmeterizedRound.getRankMode(i);
+
+            pointsByTeam.merge( turn.whoTakes(rankMode),
+                    turn.sum(countMode), Integer::sum );
+        }
+        return pointsByTeam;
     }
 
     public Map<ITeam, Integer> getPointsByTeam() {
-        var countMode = parmeterizedRound.getCountMode();
-        var rankMode = parmeterizedRound.getRankMode();
+        var pointsByTeam = new HashMap<ITeam,Integer>();
 
-        var between = turns.stream()
-                .collect(Collectors.groupingBy(t -> t.whoTakes(rankMode).getTeam(),
-                        Collectors.summingInt(t -> t.sum(countMode))
-                ));
-        return between;
+        for(int i=0; i<turns.size();i++) {
+
+            GenericImmutableTrick turn = turns.get(i);
+
+        var countMode = parmeterizedRound.getCountMode(i);
+        var rankMode = parmeterizedRound.getRankMode(i);
+
+        pointsByTeam.merge( turn.whoTakes(rankMode).getTeam(),
+                        turn.sum(countMode), Integer::sum );
+        }
+        return pointsByTeam;
     }
 
     public List<ImmutableTrick> getParametrizedTurns() {
-        return turns.stream()
-                .map(this::parametrized)
+        return IntStream.range(0,turns.size())
+                .mapToObj(i -> parametrized(turns.get(i),i))
                 .collect(Collectors.toUnmodifiableList());
     }
 
-    private ImmutableTrick parametrized(GenericImmutableTrick trick) {
+    private ImmutableTrick parametrized(GenericImmutableTrick trick, int i) {
+        IRankModeParametrized rankMode = parmeterizedRound.getRankMode(i);
+        ICountModeParametrized countMode = parmeterizedRound.getCountMode(i);
         return new ImmutableTrick(
                 trick.log,
-                trick.whoTakes(parmeterizedRound.getRankMode()),
-                trick.sum(parmeterizedRound.getCountMode())
+                trick.whoTakes(rankMode),
+                trick.sum(countMode),
+                parmeterizedRound.getCaption(i)
+
         );
     }
 
     public Map<ITeam, Integer> getLastRoundBonus() {
         if (turns.size() == 9) {
-            var rankMode = parmeterizedRound.getRankMode();
-            GenericImmutableTrick lastTurn = turns.get(turns.size() - 1);
+            int lastIdx = turns.size() - 1;
+            var rankMode = parmeterizedRound.getRankMode(lastIdx);
+            GenericImmutableTrick lastTurn = turns.get(lastIdx);
             var team = lastTurn.whoTakes(rankMode).getTeam();
-            return Map.of(team, 5);
+            return ImmutableMap.of(team, 5);
         } else {
-            return Map.of();
+            return ImmutableMap.of();
         }
 
     }
@@ -73,7 +91,7 @@ public class ImmutableRound {
     public Map<ITeam, Integer> getTotalPointsByTeam() {
         Map<ITeam, Integer> map = getPointsByTeam();
         getLastRoundBonus().forEach((k, v) -> map.merge(k, v, Integer::sum));
-        parmeterizedRound.getCountMode().transformRoundResult(map);
+        parmeterizedRound.getCountMode(0).transformRoundResult(map);
         return map;
     }
 }

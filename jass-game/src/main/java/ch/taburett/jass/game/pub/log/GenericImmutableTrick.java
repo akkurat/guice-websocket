@@ -27,7 +27,7 @@ public class GenericImmutableTrick {
      * @param rankModeParametrized
      * @return
      */
-    public IPlayerReference whoTakes(IRankModeParametrized rankModeParametrized) {
+    public final IPlayerReference whoTakes(IRankModeParametrized rankModeParametrized) {
         var cards = log.stream()
                 .map(l-> l.card)
                 .collect(Collectors.toList());
@@ -45,7 +45,7 @@ public class GenericImmutableTrick {
 
 
 
-    public int sum(ICountModeParametrized mode) {
+    public final int sum(ICountModeParametrized mode) {
         return log.stream()
                 .mapToInt(l -> mode.getCount(l.card))
                 .sum();

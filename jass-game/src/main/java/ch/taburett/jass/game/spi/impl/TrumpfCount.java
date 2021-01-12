@@ -42,6 +42,8 @@ public class TrumpfCount implements ICountModeParametrized {
         return map;
     }
 
-
-
+    @Override
+    public String getCaption() {
+        return color+" Trumpf";
+    }
 }

@@ -89,11 +89,8 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   private createTimeout() {
-    if (this.cardBuffer.length > 0) {
-      setTimeout(() => {
-        this.popCards()
-        this.createTimeout()
-      }, 10)
+    while( this.cardBuffer.length > 0) {
+      this.popCards()
     }
   }
 

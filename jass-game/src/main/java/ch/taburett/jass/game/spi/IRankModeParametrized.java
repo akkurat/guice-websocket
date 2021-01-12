@@ -31,13 +31,11 @@ public interface IRankModeParametrized {
         return cards.stream().max(getComparator(roundColor)).orElseThrow();
     }
 
-    default Comparator<? super JassCard> getComparator(JassColor roundColor) {
-        return Comparator.comparingInt(c -> getRank(c,roundColor));
-    }
-
-    int getRank(JassCard c, JassColor roundColor);
+    Comparator<? super JassCard> getComparator(JassColor roundColor);
 
     default List<JassCard> legalCards(List<JassCard> trick, List<JassCard> hand) {
         return hand;
     };
+
+    String getCaption();
 }

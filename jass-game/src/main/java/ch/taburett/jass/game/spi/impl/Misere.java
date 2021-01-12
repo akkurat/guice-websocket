@@ -6,6 +6,7 @@ import ch.taburett.jass.game.spi.ICountModeParametrized;
 import ch.taburett.jass.game.spi.IParmeterizedRound;
 import ch.taburett.jass.game.spi.IRankModeParametrized;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.collect.ImmutableMap;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -20,12 +21,12 @@ public class Misere implements IParmeterizedRound {
     }
 
     @Override
-    public ICountModeParametrized getCountMode() {
+    public ICountModeParametrized getCountMode(int round) {
         return new MisereCount();
     }
 
     @Override
-    public IRankModeParametrized getRankMode() {
+    public IRankModeParametrized getRankMode(int round) {
         return new ObenAbe.ObenAbeMode();
     }
 
@@ -54,7 +55,7 @@ public class Misere implements IParmeterizedRound {
                 var first = iterator.next();
                 var other = iterator.next();
 
-                return Map.of(first.getKey(), other.getValue(),
+                return ImmutableMap.of(first.getKey(), other.getValue(),
                         other.getKey(), first.getValue());
             }
             return result;

@@ -4,6 +4,7 @@ import ch.taburett.jass.cards.JassCard;
 import ch.taburett.jass.cards.JassValue;
 import ch.taburett.jass.game.api.ITeam;
 import ch.taburett.jass.game.impl.internal.Team;
+import com.google.common.collect.ImmutableMap;
 
 import java.util.Map;
 
@@ -16,7 +17,7 @@ public interface ICountModeParametrized {
 
     Map<JassCard, Integer> getCountMap();
 
-    Map<JassValue, Integer> commonCountMap = Map.of(
+    Map<JassValue, Integer> commonCountMap = ImmutableMap.of(
             _10, 10,
             _B, 2,
             _D, 3,
@@ -32,4 +33,5 @@ public interface ICountModeParametrized {
         return result;
     }
 
+    String getCaption();
 }

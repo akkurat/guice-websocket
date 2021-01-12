@@ -5,6 +5,7 @@ import ch.taburett.jass.game.api.ITeam;
 import ch.taburett.jass.game.pub.log.ImmutableLogEntry;
 import ch.taburett.jass.game.pub.log.ImmutableRound;
 import ch.taburett.jass.game.spi.IParmeterizedRound;
+import ch.taburett.jass.game.spi.TrickMode;
 
 import java.util.List;
 import java.util.Map;
@@ -16,14 +17,14 @@ public class StatusPayload {
     public final List<ImmutableLogEntry> roundCards;
     public final boolean yourTurn;
     public final Map<? extends ITeam, ? extends Integer> points;
-    public final IParmeterizedRound mode;
+    public final TrickMode mode;
     public final List<ImmutableRound> gameInfoPoints;
 
     public StatusPayload(List<JassCard> availCards,
                          List<JassCard> legalCards, List<ImmutableLogEntry> roundCards,
                          boolean yourTurn,
                          Map<? extends ITeam, ? extends Integer> points,
-                         IParmeterizedRound mode,
+                         TrickMode mode,
                          List<ImmutableRound> gameInfoPoints) {
         this.availCards = availCards.stream()
                 .sorted(JassCard.c())
@@ -33,7 +34,6 @@ public class StatusPayload {
         this.yourTurn = yourTurn;
         this.points = points;
         this.mode = mode;
-        this.gameInfoPoints =
-                gameInfoPoints;
+        this.gameInfoPoints = gameInfoPoints;
     }
 }

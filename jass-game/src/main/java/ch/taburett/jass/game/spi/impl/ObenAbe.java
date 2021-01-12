@@ -7,8 +7,8 @@ import ch.taburett.jass.cards.JassValue;
 import ch.taburett.jass.game.spi.ICountModeParametrized;
 import ch.taburett.jass.game.spi.IParmeterizedRound;
 import ch.taburett.jass.game.spi.IRankModeParametrized;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -33,12 +33,12 @@ public class ObenAbe implements IParmeterizedRound {
     }
 
     @Override
-    public ICountModeParametrized getCountMode() {
+    public ICountModeParametrized getCountMode(int round) {
         return mode;
     }
 
     @Override
-    public IRankModeParametrized getRankMode() {
+    public IRankModeParametrized getRankMode(int round) {
         return mode;
     }
 
@@ -70,8 +70,12 @@ public class ObenAbe implements IParmeterizedRound {
             return valueMap;
         }
 
-
         @Override
+        public String getCaption() {
+            return "ObenAbe";
+        }
+
+
         public int getRank(JassCard c, JassColor roundColor) {
             int baseRank = c.value.rank;
             if (roundColor == c.color) {
@@ -82,21 +86,12 @@ public class ObenAbe implements IParmeterizedRound {
 
         @Override
         public List<JassCard> legalCards(List<JassCard> trick, List<JassCard> hand) {
-            return legalCards_(trick,hand);
+            return LeihUtil.legalCards_(trick,hand);
         }
-        public static List<JassCard> legalCards_(List<JassCard> trick, List<JassCard> hand) {
-            if (trick.isEmpty()) {
-                return hand;
-            }
-            JassColor color = trick.get(0).color;
-            var handByColor = hand.stream()
-                    .filter(c -> c.color == color)
-                    .collect(Collectors.toList());
-            if (handByColor.isEmpty()) {
-                return hand;
-            } else {
-                return handByColor;
-            }
+
+        @Override
+        public Comparator<? super JassCard> getComparator(JassColor roundColor) {
+            return Comparator.comparingInt(c -> getRank(c,roundColor));
         }
     }
 }
