@@ -15,7 +15,8 @@ import { TableComponent } from './table/table.component'
     CommonModule, 
     ChatModule
   ],
-  exports: [ GameComponent ]
+  exports: [ GameComponent ],
+  // providers: [jassServiceProvider ]
 })
 export class GameModule { }
 

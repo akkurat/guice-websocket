@@ -19,7 +19,7 @@
 </ng-container>
 <div [ngClass]="{'deck': true, 'disabled': !canPlay}">
     <div *ngFor="let card of cards; trackBy:trackCard" 
-    [ngClass]="{illegal: !card.legal, legal: card.legal}">
+    >
         {{card.legal}}
         <jas-card [card]="card" (click)="playCard(card)"></jas-card>
     </div>
