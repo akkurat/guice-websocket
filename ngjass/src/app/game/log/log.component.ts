@@ -16,7 +16,6 @@ export class LogComponent implements OnChanges {
 
   constructor() { }
   ngOnChanges(changes: SimpleChanges): void {
-    console.log(changes)
     if (this._log) {
       this.log = this._log.map(this.map)
     }

@@ -24,7 +24,9 @@ public class SubscriptionSink {
 
     public void sendToUser(String s, IJassMessage iJassMessage)
     {
+        System.out.println("SendToUser "+s+System.currentTimeMillis());
         this.simp.convertAndSendToUser(s, GAME_PLAY + gameId, iJassMessage);
+        System.out.println("SentToUser "+s+System.currentTimeMillis());
     }
 
     public ProxyUser getPlayerByName() {

@@ -3,12 +3,18 @@ package ch.taburett.gameworld.services;
 import ch.taburett.jass.game.api.IPlayerReference;
 import ch.taburett.jass.game.spi.events.server.IServerMessage;
 import ch.taburett.jass.game.spi.events.user.IUserEvent;
+import lombok.val;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.BiConsumer;
 
 public class ProxyUser {
 
+    Logger logger = LoggerFactory.getLogger(ProxyUser.class);
 
     public String getUserName() {
         return userName;
@@ -22,13 +28,13 @@ public class ProxyUser {
     private final IPlayerReference reference;
     private BiConsumer<String, IServerMessage<?>> sink;
     private final Object lock = new Object();
-    private LinkedBlockingQueue<IServerMessage<?>> buffer;
+    private Map<Integer,LinkedBlockingQueue<IServerMessage<?>>> buffer;
 
     private ProxyUser(String getUserName, IPlayerReference getReference)
     {
         this.userName = getUserName;
         this.reference = getReference;
-        this.buffer = new LinkedBlockingQueue<>();
+        this.buffer = new HashMap<>();
         reference.setProxy(this::receiveServerMessage);
     }
 
@@ -51,7 +57,9 @@ public class ProxyUser {
      */
     public void receiveServerMessage(IServerMessage<?> msg) {
         synchronized (lock) {
-            buffer.add(msg);
+            int type = msg.getBuffertype();
+            buffer.computeIfAbsent( type, k -> new LinkedBlockingQueue<>() );
+            buffer.get(type).add(msg);
             if(sink!= null) {
                 sink.accept(userName, msg);
                 removeAllButOne();
@@ -62,14 +70,20 @@ public class ProxyUser {
     public void userConnected(BiConsumer<String, IServerMessage<?>> sink) {
         synchronized (lock) {
             this.sink = sink;
-            buffer.forEach(m -> sink.accept(userName, m));
+            for (LinkedBlockingQueue<IServerMessage<?>> b : buffer.values()) {
+                for (IServerMessage<?> m : b) {
+                    sink.accept(userName, m);
+                }
+            }
             removeAllButOne();
         }
     }
 
     private void removeAllButOne() {
-        while(buffer.size() > 1) {
-            buffer.remove();
+        for(val v : buffer.values() ) {
+            while (v.size() > 1) {
+                v.remove();
+            }
         }
     }
 

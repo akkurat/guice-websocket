@@ -22,6 +22,11 @@ public class ModeEvent implements IServerMessage<ModeEvent.ModePayload> {
         return "MODE";
     }
 
+    @Override
+    public int getBuffertype() {
+        return 2;
+    }
+
 
     public static class ModePayload {
         public final Map<String, PresenterMode> modes;

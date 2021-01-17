@@ -1,4 +1,4 @@
-package ch.taburett.gameworld.wiring;
+package crap;
 
 import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;

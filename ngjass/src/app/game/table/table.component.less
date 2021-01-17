@@ -1,0 +1,55 @@
+.table {
+    display              : grid;
+    grid-template:
+        ". tt t . ." 
+        ". . t r rt" 
+        ". l c r ." 
+        "lt l b . ." 
+        ". . b bt ." 
+    ;
+    // grid-template-columns: repeat(20px) ;
+
+    .top {
+        grid-area: t;
+        align-self: start; // col
+        justify-self: start; // row
+        &.text {
+            grid-area: tt;
+            justify-self: end; // row
+            
+        }
+    }
+
+    .bottom {
+        grid-area: b;
+        align-self: end;
+        justify-self: end;
+        &.text {
+            grid-area: bt;
+            justify-self: start;
+        }
+    }
+
+    .right {
+        grid-area: r;
+        align-self: start;
+        justify-self: end;
+        &.text {
+            grid-area: rt;
+            justify-self: start;
+        }
+    }
+
+    .left {
+        grid-area: l;
+        align-self: end;
+        justify-self: start;
+        &.text {
+            grid-area: lt;
+            justify-self: end;
+        }
+    }
+    .center {
+        grid-area: c;
+    }
+}

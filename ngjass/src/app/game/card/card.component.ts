@@ -1,16 +1,16 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ICardLegal } from '../game/game.component';
-import { ICard } from '../jassinterfaces';
 
 @Component({
-  selector: 'jas-card',
+  selector: 'jas-card[card]',
   templateUrl: './card.component.html',
   styleUrls: ['./card.component.less']
 })
 export class CardComponent implements OnInit {
 
-  @Input() card: ICardLegal
+  @Input() card: JassCard
 
+  
   get blackOrRed() {
     switch (this.card.color) {
       case "KREUZ":
@@ -33,6 +33,7 @@ export class CardComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    console.log(this.card)
   }
 
 }

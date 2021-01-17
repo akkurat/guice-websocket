@@ -13,7 +13,7 @@ public class CurrentGamePoint extends AbstractWebSocketHandler {
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        System.out.println("New Text Message Received");
+        //System.out.println("New Text Message Received");
         session.sendMessage(message);
     }
 }

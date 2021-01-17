@@ -23,12 +23,11 @@ export class StompService {
     this.client = Stomp.over(webSocket);
     const token = getCookie('XSRF-TOKEN')
     const headers = {"X-XSRF-TOKEN": token}
+    this.client.debug = () =>  {}
     this.client.connect(headers, frame => {
         this.waitingList.forEach( f => f() )
         this.waitingList = []
-        console.log(frame)
     }, frame => console.log(frame));
-    this.client.subscribe
   }
 
   /**
@@ -52,7 +51,5 @@ export class StompService {
   send(filter: string, add: {}, text: string ) {
       this.client.send(filter, add, text)
   }
-
-
 
 }

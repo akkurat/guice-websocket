@@ -1,14 +1,15 @@
 package ch.taburett.gameworld.services;
 
+import ch.taburett.gameworld.messages.UserMapEvent;
 import ch.taburett.jass.game.api.IGame;
 import ch.taburett.jass.game.api.IPlayerReference;
-import ch.taburett.jass.game.spi.events.server.IServerMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -20,6 +21,8 @@ import static ch.taburett.gameworld.services.ProxyGame.GAME_STATE.NEW;
 import static ch.taburett.gameworld.services.ProxyGame.GAME_STATE.STARTED;
 
 public class ProxyGame {
+    Logger logger = LoggerFactory.getLogger(ProxyGame.class);
+
     public static final String GAME_PLAY = "/game/play/";
     public GAME_STATE state;
     private final ConcurrentHashMap<IPlayerReference, ProxyUser> userList = new ConcurrentHashMap<IPlayerReference, ProxyUser>();
@@ -37,6 +40,11 @@ public class ProxyGame {
     }
 
     private ProxyGame(String ownerUsername, ProxyInstanceableGame gameInfo, IGame game, LocalDateTime creationDateTime, String uuid, SimpMessagingTemplate simp) {
+        logger.trace("A TRACE Message");
+        logger.debug("A DEBUG Message");
+        logger.info("An INFO Message");
+        logger.warn("A WARN Message");
+        logger.error("An ERROR Message");
         // TODO: games like molotov have variable number of participants
         // -> separate gameConfig and Game
         // Move userreferences to gameConf and unite with roundsuppliere
@@ -80,6 +88,8 @@ public class ProxyGame {
 
     private void sendUserList() {
 
+        var playerList = game.getPlayers();
+
         var map = userList.entrySet().stream()
                 .collect(Collectors.toUnmodifiableMap(
                        e -> e.getKey().getRef(),
@@ -89,7 +99,7 @@ public class ProxyGame {
         userList.values()
                 .forEach(proxyUser -> {
                     var m = new UserMapEvent(proxyUser.getReference(),
-                            new UserMapEvent.UserPayload(map, proxyUser.getReference().getRef() )
+                            new UserMapEvent.UserPayload(playerList, map, proxyUser.getReference().getRef() )
                     );
                     proxyUser.receiveServerMessage(m);
                 });

@@ -1,0 +1,32 @@
+<!-- <div class="deck"(click)="jumpTimeOut()">
+    <div *ngFor="let c of table">
+        <div>{{c.playerReference.ref}}</div>
+        <jas-card [card]="c.card"></jas-card>
+    </div>
+    <div>
+        <a *ngIf="waiting" >Click to continue...</a>
+        <div *ngIf="yourTurn && canPlay">Your Turn</div>
+    </div>
+</div> -->
+
+<!-- {{info|json}} -->
+<div *ngFor="let p of info?.playerList">
+    {{p.ref}}
+</div>
+<div class="table" (click)="confirm.next()">
+    <ng-container *ngFor="let p of uiPlayers">
+         <div [class]="p.class">
+            <ng-container *ngIf="p?.card">
+            <jas-card [card]="p.card"></jas-card>
+            </ng-container>
+         </div>
+         <div [ngClass]="[p.class, 'text']">
+            {{p.player.ref}}
+            <!-- {{p.date}} -->
+        </div>
+    </ng-container>
+
+    <div class="center" >
+        {{message}}
+    </div>
+</div>

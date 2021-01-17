@@ -35,7 +35,7 @@ public class RoundPreparer {
         if(roundPlayers.getCurrentPlayer()==playerReference) {
             DecideEvent.DecideParams pl = message.getPayload();
             PresenterMode factory = modes.get(pl.type);
-            IParmeterizedRound turn = factory.getModeFactory().apply(pl.params);
+            IParmeterizedRound turn = factory.getModeFactory().createRound(pl.params);
             startRoundCallback.accept(idx, turn);
         }
     }

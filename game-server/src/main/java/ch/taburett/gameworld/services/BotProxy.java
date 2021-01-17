@@ -23,7 +23,7 @@ public class BotProxy {
     }
 
     public void receiveServerMessage(String name, IServerMessage<?> msg) {
-        System.out.println(msg);
+        //System.out.println(msg);
         if(msg instanceof Status) {
             Status yt = (Status) msg;
             StatusPayload pl = yt.getPayload();

@@ -19,7 +19,7 @@ public class WebSocketStompGame {
     @MessageMapping("/cmds")
     public void convert(@Payload GameCmd wrapper, SimpMessageHeaderAccessor headerAccessor )
     {
-        System.out.println(wrapper);
+        //System.out.println(wrapper);
         gl.react(wrapper, headerAccessor);
     }
 
@@ -27,14 +27,14 @@ public class WebSocketStompGame {
     @MessageMapping("/cmds/new")
     public void newGame(@Payload GameCmdNew wrapper, SimpMessageHeaderAccessor headerAccessor )
     {
-        System.out.println(wrapper);
+        //System.out.println(wrapper);
         gl.newGame(wrapper, headerAccessor);
     }
 
     @MessageMapping("/cmds/remove")
     public void deleteGame(@Payload GameCmdDelete wrapper, SimpMessageHeaderAccessor headerAccessor )
     {
-        System.out.println(wrapper);
+        //System.out.println(wrapper);
         gl.deleteGame(wrapper, headerAccessor);
     }
 

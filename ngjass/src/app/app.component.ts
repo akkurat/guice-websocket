@@ -32,7 +32,6 @@ export class AppComponent implements OnInit {
   }
 
   click(ev) {
-    console.log(ev)
     this.echoChannel.next({"type":"BC","content":"asfsadf"})
   }
 

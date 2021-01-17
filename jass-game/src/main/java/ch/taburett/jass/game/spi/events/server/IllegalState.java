@@ -13,4 +13,9 @@ public class IllegalState implements IServerMessage<String> {
     public String getCode() {
         return "ERROR";
     }
+
+    @Override
+    public int getBuffertype() {
+        return 0;
+    }
 }

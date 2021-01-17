@@ -6,6 +6,7 @@ rootProject.name = 'game-collection'
 include 'jass-cards'
 //include 'jass-evaluator'
 include 'jass-game'
+include 'game-server-nonjigsaw'
 include 'game-server'
 include 'session'
 

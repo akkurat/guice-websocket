@@ -2,6 +2,8 @@ package ch.taburett.gameworld.services;
 
 import ch.taburett.jass.game.spi.events.user.DecideEvent;
 import ch.taburett.jass.game.spi.events.user.Play;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -26,6 +28,7 @@ import static ch.taburett.gameworld.services.ProxyGame.GAME_PLAY;
 @Service
 @Controller
 public class GameList {
+    private static final Logger logger = LoggerFactory.getLogger(GameList.class);
 
     public static final String GAME_GAMES = "/game/games";
     public static final String GAME_JOINED = "/game/joined";
@@ -67,7 +70,7 @@ public class GameList {
         // Pity: Somehow subscription is not necessarily ready
         // this is not a good way to do this
         //
-        executorService.execute( () -> {
+        execute( () -> {
 
         StompHeaderAccessor wrap = StompHeaderAccessor.wrap(subscribeEvent.getMessage());
         // TODO: this could be solved by @SubscribeMapping @SendTo
@@ -102,6 +105,17 @@ public class GameList {
 
         });
     }
+
+    private void execute(Runnable runnable) {
+        executorService.execute(() -> {
+            try {
+                runnable.run();
+            } catch (Throwable t) {
+                logger.error("GL", t);
+            }
+        });
+    }
+
     private void sendToUser(String name, Object msg)
     {
     }

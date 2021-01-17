@@ -71,6 +71,7 @@ class Round {
 
         if (roundPlayers.allCardsPlayed()) {
             turnLog.add(trick.getImmutableTrick());
+            sendStati(null,null);
             return ROUND_ENDED;
         }
 
@@ -102,7 +103,7 @@ class Round {
 
     private void sendStati(RoundPlayer np, ImmutableRound tmpRound) {
         for (RoundPlayer rp_ : roundPlayers.roundPlayers()) {
-            System.out.println("Sending stati");
+            //System.out.println("Sending stati");
             StatusPayload payload = new StatusPayload(
                     rp_.cards,
                     mode.getRankMode(turnLog.size()).legalCards(trick.getCards(), rp_.cards),

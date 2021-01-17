@@ -1,5 +1,5 @@
 <div>
-    {{users|json}}
+    {{gameEvents.length}}
 </div>
 <div>
     <ul>
@@ -8,24 +8,18 @@
         </li>
     </ul>
 </div>
-<jas-log [log]="infopoints"></jas-log>
+<jas-log [log]="log"></jas-log>
 <div>
     <!-- {{points|json}} -->
     <jas-roundinfo [info]="mode"></jas-roundinfo>
 </div>
 <!-- TODO: class table -->
-<div class="deck"(click)="jumpTimeOut()">
-    <div *ngFor="let c of table">
-        <div>{{c.playerReference.ref}}</div>
-        <jas-card [card]="c.card"></jas-card>
-    </div>
-    <div>
-        <a *ngIf="waiting" >Click to continue...</a>
-        <div *ngIf="yourTurn && canPlay">Your Turn</div>
-    </div>
-</div>
+<ng-container *ngIf="!modi">
+    <jas-table [info]="users" [cards]="table" (confirm)="jumpTimeOut()"></jas-table>
+</ng-container>
 <div [ngClass]="{'deck': true, 'disabled': !canPlay}">
-    <div *ngFor="let card of cards" [ngClass]="{illegal: !card.legal, legal: card.legal}">
+    <div *ngFor="let card of cards; trackBy:trackCard" 
+    [ngClass]="{illegal: !card.legal, legal: card.legal}">
         {{card.legal}}
         <jas-card [card]="card" (click)="playCard(card)"></jas-card>
     </div>

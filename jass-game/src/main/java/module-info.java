@@ -6,6 +6,7 @@ module ch.taburett.jass.game {
     requires com.fasterxml.jackson.annotation;
     requires com.fasterxml.jackson.databind;
     requires com.google.common;
+    requires org.slf4j;
     exports ch.taburett.jass.game.api;
     exports ch.taburett.jass.game.pub.log;
     exports ch.taburett.jass.game.pub;
