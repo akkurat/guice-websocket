@@ -1,24 +1,29 @@
-import { Statement } from '@angular/compiler';
-import { Injectable, OnDestroy } from '@angular/core';
-import { Observable } from 'rxjs';
+import { EventEmitter, Injectable, OnDestroy } from '@angular/core';
+import { BehaviorSubject, Observable, Subject, Subscriber } from 'rxjs';
+import { share } from 'rxjs/operators';
 import { Subscription } from 'stompjs';
 import { StompService } from '../stomp.service';
 import { ICardLegal } from './game/game.component';
 
 @Injectable()
 export class JassServiceService implements OnDestroy {
-  sink: any;
-  observable: Observable<State>;
   gameId: string;
+
+  private readonly modeSink = new Subject<ModePayload>();
+  readonly modes = this.modeSink.asObservable()
+
+  private readonly userSink = new  Subject<UserPayload>();
+  readonly users = this.userSink.asObservable()
+
+  private readonly trickSink =  new Subject<ConvertedStatusPayload>();
+  readonly tricks = this.trickSink.asObservable();
+
+  private readonly gameInfoSink  =  new Subject<GameInfo>();
+  readonly gameinfos = this.gameInfoSink.asObservable();
 
   constructor(
     private stomp: StompService
   ) {
-
-    this.observable = new Observable(obs => {
-      this.sink = obs
-    });
-
   }
 
 
@@ -27,8 +32,6 @@ export class JassServiceService implements OnDestroy {
     this.stomp.subscribe('/user/game/play/' + gameId,
       message => this.handleGameEvent(message.body))
       .then(s => this.gameSubscription = s)
-
-    return this.observable;
   }
 
   gameSubscription: Subscription;
@@ -43,15 +46,7 @@ export class JassServiceService implements OnDestroy {
       // this.router.navigateByUrl('/')
       return;
     }
-    this.state.gameEvents.push(payload)
     this.handlePayload(payload)
-  }
-
-  popGameEvent() {
-    if (this.state.gameEvents.length > 0) {
-      const payload = this.state.gameEvents.shift()
-      this.handlePayload(payload);
-    }
   }
 
   private handlePayload(payload: any) {
@@ -61,36 +56,37 @@ export class JassServiceService implements OnDestroy {
     } else if (obj.code === 'MODE') {
       this.handleModeEvent(obj.payload as ModePayload);
     } else if (obj.code === 'USERS') {
-      this.state.users = obj.payload;
-      this.sink.next({users: this.state.users})
+      this.userSink.next(obj.payload)
     }
   }
 
   private handleModeEvent(payload: ModePayload) {
-    this.state.modi = payload.modes;
     this.state.cards = payload.cards
     this.state.table = []
 
-    this.sink.next(this.state)
-
+    this.modeSink.next(payload)
   }
 
+  gameInfo: GameInfo = { log : [], points:{} }
   private handleTurn(p: StatusPayload) {
-    // this.cards = this.enrichCards(p.availCards, p.legalCards)
-    // this.addToTable(p.roundCards);
-    this.sink.next(p.availCards)
-    this.state.points = p.points;
-    if (this.state.log.length != p.gameInfoPoints.length) { this.state.log = p.gameInfoPoints }
+    if (this.gameInfo.log.length != p.gameInfoPoints.length) { 
+      this.gameInfoSink.next({points:p.points, log: p.gameInfoPoints})
+    } else {
+      this.gameInfoSink.next({points:p.points})
+    }
+    this.gameInfo.log = p.gameInfoPoints 
+    this.gameInfo.points = p.points;
+
+    this.state.table = p.roundCards
+    this.state.cards = this.enrichCards(p.availCards, p.legalCards)
     this.state.mode = p.mode;
-    this.state.modi = null;
     this.state.yourTurn = p.yourTurn;
 
-    this.sink.next(this.state)
+    this.trickSink.next(this.state)
   }
 
   playCard(card) {
     // if (this.canPlay) {
-    debugger
     console.log('Clicked to play card')
     this.stomp.send('/app/cmds/play/' + this.gameId, {}, JSON.stringify({ code: 'PLAY', payload: card }))
     // };
@@ -102,22 +98,34 @@ export class JassServiceService implements OnDestroy {
   ngOnDestroy() {
     this.gameSubscription?.unsubscribe()
   }
+
+  private enrichCards(hand: JassCard[], legal: JassCard[]): ICardLegal[] {
+    const lookup = new Set(legal.map(this.mapCard))
+    return hand.map(c => ({ ...c, legal: lookup.has(this.mapCard(c)) }))
+  }
+  private mapCard(c: JassCard): string {
+    return c.color + c.value;
+  }
 }
+
 
 export class State {
   cards: ICardLegal[] = []
-  cardBuffer = []
   lastCardEvent: number = 0;
-  h: NodeJS.Timeout;
   yourTurn = false;
-  users: UserPayload;
-  modi: { [index: string]: PresenterMode; };
   table: ImmutableLogEntry[];
-  gameEvents: string[] = [];
-  points: { [index: string]: number; };
-  log: ImmutableRound[] = []
   mode: TrickMode;
-  waiting: boolean;
-  params: any;
-  canPlay = false
+}
+
+export interface ConvertedStatusPayload {
+  cards: ICardLegal[]
+  yourTurn: boolean
+  table: ImmutableLogEntry[];
+  mode: TrickMode;
+
+}
+
+export interface GameInfo {
+  points: { [index: string]: number; };
+  log?: ImmutableRound[]
 }

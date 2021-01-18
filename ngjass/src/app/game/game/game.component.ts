@@ -1,7 +1,7 @@
-import { StompService } from '@/stomp.service';
-import { AfterViewChecked, Component, ErrorHandler, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subscription } from 'stompjs';
+import { Subscription, asyncScheduler, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { JassServiceService } from '../jass-service.service'
 
 @Component({
@@ -12,22 +12,22 @@ import { JassServiceService } from '../jass-service.service'
 
 })
 export class GameComponent implements OnInit {
-  gameSubscription: Subscription;
   cards: ICardLegal[] = []
   cardBuffer = []
   lastCardEvent: number = 0;
-  h: NodeJS.Timeout;
   yourTurn = false;
-  users: UserPayload;
+  users: Observable<UserPayload>;
   modi: { [index: string]: PresenterMode; };
   table: ImmutableLogEntry[];
   gameEvents: string[] = [];
   points: { [index: string]: number; };
-  log: ImmutableRound[]=[]
   mode: TrickMode;
   waiting: boolean;
   params: any;
-  canPlay = false;
+  canPlay = true;
+  modes: Observable<ModePayload>;
+  waitingTask: Subscription;
+  log: Observable<ImmutableRound[]>;
 
 
 
@@ -35,7 +35,6 @@ export class GameComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
     private jassService: JassServiceService
   ) {
   }
@@ -43,15 +42,40 @@ export class GameComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     this.params = this.route.params;
     console.log("init game")
+    this.users = this.jassService.users
+    this.jassService.modes.subscribe( m => {this.modi = m.modes; this.cards = m.cards} )
+    this.jassService.tricks.subscribe(s => {
+       this.addToTable(s.table)
+       this.cards = s.cards
+       this.yourTurn = s.yourTurn
+       this.mode = s.mode
+    })
+    this.log = this.jassService.gameinfos.pipe(map(s => s.log))
+
     this.jassService.subscribe(this.params.value.id)
-    .subscribe( c => Object.assign(this, c))
+
     // interval(500).subscribe( () => this.popGameEvent())
   }
 
 
+  selectMode(key) {
+    this.jassService.selectMode(key);
+  }
+
+
+  trackCard(card:ICardLegal) {
+    return card.color+card.value+card.legal
+  }
+
+  playCard(c: JassCard) {
+    this.jassService.playCard(c);
+  }
+
   private addToTable(roundCards: ImmutableLogEntry[]) {
     if (roundCards.length === 0 || this.cardBuffer.length > 0) {
       this.waiting = true
+      if(this.waitingTask) {this.waitingTask.unsubscribe()}
+      this.waitingTask = asyncScheduler.schedule(() => this.jumpTimeOut(), 5000)
       this.cardBuffer.push(roundCards);
     } else {
       this.table = roundCards
@@ -65,34 +89,12 @@ export class GameComponent implements OnInit {
     }
   }
 
-  private createTimeout() {
+  jumpTimeOut() {
+    if (this.waitingTask) { this.waitingTask.unsubscribe() }
     while (this.cardBuffer.length > 0) {
       this.popCards()
     }
-  }
-
-
-  
-
-  jumpTimeOut() {
-    this.createTimeout()
     this.waiting = false
-  }
-
-  private enrichCards(hand: JassCard[], legal: JassCard[]): ICardLegal[] {
-    const lookup = new Set(legal.map(this.mapCard))
-    return hand.map(c => ({ ...c, legal: lookup.has(this.mapCard(c)) }))
-  }
-  private mapCard(c: JassCard): string {
-    return c.color + c.value;
-  }
-
-  trackCard(idx,card:ICardLegal) {
-    return card.color+card.value+card.legal
-  }
-
-  playCard(c: JassCard) {
-    this.jassService.playCard(c);
   }
 }
 

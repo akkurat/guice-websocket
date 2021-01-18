@@ -10,9 +10,6 @@
 </div> -->
 
 <!-- {{info|json}} -->
-<div *ngFor="let p of info?.playerList">
-    {{p.ref}}
-</div>
 <div class="table" (click)="confirm.next()">
     <ng-container *ngFor="let p of uiPlayers">
          <div [class]="p.class">

@@ -1,5 +1,4 @@
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
-import { IRoundInfo } from './roundinfo/roundinfo.component';
 
 @Component({
   selector: 'jas-log',

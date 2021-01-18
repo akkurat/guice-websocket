@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 
 @Component({
-  selector: 'jas-table[info]',
+  selector: 'jas-table[users]',
   templateUrl: './table.component.html',
   styleUrls: ['./table.component.less']
 })
@@ -21,7 +21,7 @@ export class TableComponent implements OnChanges {
   @Input()
   cards: ImmutableLogEntry[]
 
-  @Input()
+  @Input('users')
   info: UserPayload
 
   @Output() confirm = new EventEmitter()
@@ -47,7 +47,7 @@ export class TableComponent implements OnChanges {
       if( this.cards ) {
         card = this.cards.find( l => l.playerReference.ref == player.ref)
       }
-      retValue.push( {class: v, player, card: card?.card, time: card?.dateTime} )
+      retValue.push( {class: v, player, card: card?.card, time: card?.dateTime, name: this.info.users[player.ref]} )
     }
     this.uiPlayers = retValue;
   }

@@ -8,7 +8,8 @@ import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/cor
 })
 export class RoundinfoComponent implements OnChanges {
 
-  @Input('info') _info: IRoundInfo 
+  @Input('info') _info: TrickMode
+  @Input('users') users
   factor: number;
   color: {};
   caption: string;
@@ -37,11 +38,4 @@ export class RoundinfoComponent implements OnChanges {
 
 
 
-}
-
-export interface IRoundInfo {
-  trickCaption: string;
-  semanticInfo?: any;
-  factor: number;
-  caption: string;
 }

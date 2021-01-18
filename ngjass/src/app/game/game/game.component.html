@@ -1,21 +1,18 @@
 <div>
-    {{gameEvents.length}}
-</div>
-<div>
     <ul>
         <li (click)="selectMode(modus.key)" *ngFor="let modus of modi|keyvalue">
             {{modus|json}}
         </li>
     </ul>
 </div>
-<jas-log [log]="log"></jas-log>
+<jas-log [log]="log|async"></jas-log>
 <div>
     <!-- {{points|json}} -->
-    <jas-roundinfo [info]="mode"></jas-roundinfo>
+    <jas-roundinfo [info]="mode" [users]="users|async" ></jas-roundinfo>
 </div>
 <!-- TODO: class table -->
 <ng-container *ngIf="!modi">
-    <jas-table [info]="users" [cards]="table" (confirm)="jumpTimeOut()"></jas-table>
+    <jas-table [users]="users|async" [cards]="table" (confirm)="jumpTimeOut()"></jas-table>
 </ng-container>
 <div [ngClass]="{'deck': true, 'disabled': !canPlay}">
     <div *ngFor="let card of cards; trackBy:trackCard" 
@@ -24,11 +21,6 @@
         <jas-card [card]="card" (click)="playCard(card)"></jas-card>
     </div>
 </div>
-<div>
-    {{params|json}}
-</div>
-
-<textarea [value]="gameEvents.join('\n')"></textarea>
 <div>
     <jas-chat></jas-chat>
 </div>
