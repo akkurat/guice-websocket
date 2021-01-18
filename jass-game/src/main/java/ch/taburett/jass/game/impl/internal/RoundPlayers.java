@@ -86,7 +86,7 @@ public class RoundPlayers {
         return rPlayers;
     }
 
-    public void setPlayer(IPlayerReference nextPlayer) {
+    public void setCurrentPlayer(IPlayerReference nextPlayer) {
         if(references.contains(nextPlayer)) {
             idx = references.indexOf(nextPlayer);
         }else {

@@ -1,5 +1,5 @@
 import { EventEmitter, Injectable, OnDestroy } from '@angular/core';
-import { BehaviorSubject, Observable, Subject, Subscriber } from 'rxjs';
+import { BehaviorSubject, Observable, ReplaySubject, Subject, Subscriber } from 'rxjs';
 import { share } from 'rxjs/operators';
 import { Subscription } from 'stompjs';
 import { StompService } from '../stomp.service';
@@ -12,7 +12,7 @@ export class JassServiceService implements OnDestroy {
   private readonly modeSink = new Subject<ModePayload>();
   readonly modes = this.modeSink.asObservable()
 
-  private readonly userSink = new  Subject<UserPayload>();
+  private readonly userSink = new ReplaySubject<UserPayload>(1);
   readonly users = this.userSink.asObservable()
 
   private readonly trickSink =  new Subject<ConvertedStatusPayload>();

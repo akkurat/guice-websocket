@@ -60,5 +60,6 @@ export interface Shit {
   player: IPlayerReference;
   card?: JassCard;
   time?: any
+  name?: string
 
 }

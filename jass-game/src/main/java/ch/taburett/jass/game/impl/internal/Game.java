@@ -105,11 +105,11 @@ public class Game implements IGameInfo, ch.taburett.jass.game.api.IGame {
     }
 
 
-    private void startRound(int pos, IParmeterizedRound mode) {
+    private void startRound(IPlayerReference ref, IParmeterizedRound mode) {
         checkThread();
         state = ROUND;
         round = new Round(roundPlayers, this, mode);
-        round.start(pos);
+        round.start(ref);
     }
 
 

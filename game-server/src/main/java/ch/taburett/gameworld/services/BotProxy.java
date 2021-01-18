@@ -23,16 +23,10 @@ public class BotProxy {
     }
 
     public void receiveServerMessage(String name, IServerMessage<?> msg) {
-        //System.out.println(msg);
         if(msg instanceof Status) {
             Status yt = (Status) msg;
             StatusPayload pl = yt.getPayload();
             if( pl.yourTurn ) {
-//                try {
-//                    Thread.sleep(1);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
                 JassCard card = pl.legalCards.get(0);
                 sink.accept(new Play(card));
             }

@@ -34,10 +34,11 @@ class Round {
         this.mode = mode;
     }
 
-    void start(int pos) {
+    void start(IPlayerReference ref) {
 
         System.out.println("Wating for play...");
 
+        roundPlayers.setCurrentPlayer(ref);
         trick = new Trick(roundPlayers.size());
 
         sendStatus(toImmtable());
@@ -80,7 +81,7 @@ class Round {
             IPlayerReference nextPlayer = imTrick.whoTakes(mode.getRankMode(turnLog.size()));
             turnLog.add(imTrick);
             trick = new Trick(roundPlayers.size());
-            roundPlayers.setPlayer(nextPlayer);
+            roundPlayers.setCurrentPlayer(nextPlayer);
         } else {
             roundPlayers.next();
         }

@@ -1,5 +1,6 @@
 package ch.taburett.jass.game.impl.internal;
 
+import ch.taburett.jass.game.api.IPlayerReference;
 import ch.taburett.jass.game.impl.PlayerReference;
 import ch.taburett.jass.game.spi.IParmeterizedRound;
 import ch.taburett.jass.game.spi.impl.PresenterMode;
@@ -13,12 +14,12 @@ public class RoundPreparer {
 
 
     private final Map<String, PresenterMode> modes;
-    private final BiConsumer<Integer, IParmeterizedRound> startRoundCallback;
+    private final BiConsumer<IPlayerReference, IParmeterizedRound> startRoundCallback;
     private final RoundPlayers roundPlayers;
     private int idx;
 
     public RoundPreparer(Map<String, PresenterMode> modes,
-                         BiConsumer<Integer, IParmeterizedRound> startRoundCallback, RoundPlayers roundPlayers) {
+                         BiConsumer<IPlayerReference, IParmeterizedRound> startRoundCallback, RoundPlayers roundPlayers) {
         this.modes = modes;
         this.startRoundCallback = startRoundCallback;
         this.roundPlayers = roundPlayers;
@@ -36,7 +37,7 @@ public class RoundPreparer {
             DecideEvent.DecideParams pl = message.getPayload();
             PresenterMode factory = modes.get(pl.type);
             IParmeterizedRound turn = factory.getModeFactory().createRound(pl.params);
-            startRoundCallback.accept(idx, turn);
+            startRoundCallback.accept(playerReference, turn);
         }
     }
 }

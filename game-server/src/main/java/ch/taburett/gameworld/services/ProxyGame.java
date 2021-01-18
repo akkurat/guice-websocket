@@ -130,7 +130,7 @@ public class ProxyGame {
     public void addBot(String botName) {
         var ref = getNextFreePlayer();
         ref.ifPresent( r -> {
-            ProxyUser proxyUser = ProxyUser.createAndConnect(r.toString() + "bot_"+botName, r);
+            ProxyUser proxyUser = ProxyUser.createAndConnect("bot_"+botName, r);
             BotProxy botProxy = new BotProxy(proxyUser::receivePlayerMsg);
             proxyUser.userConnected(botProxy::receiveServerMessage);
             addPlayer(proxyUser);

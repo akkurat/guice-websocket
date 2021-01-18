@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription, asyncScheduler, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, publishReplay } from 'rxjs/operators';
 import { JassServiceService } from '../jass-service.service'
 
 @Component({
@@ -22,16 +22,12 @@ export class GameComponent implements OnInit {
   gameEvents: string[] = [];
   points: { [index: string]: number; };
   mode: TrickMode;
-  waiting: boolean;
+  waiting = false;
   params: any;
-  canPlay = true;
   modes: Observable<ModePayload>;
   waitingTask: Subscription;
   log: Observable<ImmutableRound[]>;
-
-
-
-
+  error: any;
 
   constructor(
     private route: ActivatedRoute,
@@ -49,7 +45,8 @@ export class GameComponent implements OnInit {
        this.cards = s.cards
        this.yourTurn = s.yourTurn
        this.mode = s.mode
-    })
+       this.modi = null
+    }, e => this.error = e)
     this.log = this.jassService.gameinfos.pipe(map(s => s.log))
 
     this.jassService.subscribe(this.params.value.id)
@@ -72,10 +69,10 @@ export class GameComponent implements OnInit {
   }
 
   private addToTable(roundCards: ImmutableLogEntry[]) {
-    if (roundCards.length === 0 || this.cardBuffer.length > 0) {
+    if ( this.table && (roundCards.length === 0 || this.cardBuffer.length > 0) ) {
       this.waiting = true
       if(this.waitingTask) {this.waitingTask.unsubscribe()}
-      this.waitingTask = asyncScheduler.schedule(() => this.jumpTimeOut(), 5000)
+      this.waitingTask = asyncScheduler.schedule(() => this.jumpTimeOut(), 1)
       this.cardBuffer.push(roundCards);
     } else {
       this.table = roundCards
@@ -95,6 +92,15 @@ export class GameComponent implements OnInit {
       this.popCards()
     }
     this.waiting = false
+  }
+
+  isDeckDisabled() {
+    console.log(this.waiting)
+    return (this.waiting || this.modi) || !this.yourTurn
+  }
+
+  isPlaying() {
+    return !this.modi;
   }
 }
 
