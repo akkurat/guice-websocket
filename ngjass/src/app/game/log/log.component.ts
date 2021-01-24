@@ -7,11 +7,11 @@ import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/cor
 })
 export class LogComponent implements OnChanges {
 
-  @Input('log') _log: any[] = []
+  @Input('log') _log: ImmutableRound[] = []
 
-  log: ImmutableRound[] = []
+  log: PresenterRound[] = []
 
-  details: ImmutableRound = null
+  details: PresenterRound = null
 
   constructor() { }
   ngOnChanges(changes: SimpleChanges): void {
@@ -20,15 +20,16 @@ export class LogComponent implements OnChanges {
     }
   }
 
-  private map(t): ImmutableRound {
-    return {
+  private map(t: ImmutableRound): PresenterRound  {
+    const gagi = { 
       totalPointsByTeam: t.totalPointsByTeam,
       turns: t.parametrizedTurns,
       roundInfo: t.parmeterizedRound
     }
+    return gagi
   }
 
-  showDetail(round: ImmutableRound) {
+  showDetail(round: PresenterRound) {
     if (this.details === round) {
       this.details = null
     } else {
@@ -38,17 +39,10 @@ export class LogComponent implements OnChanges {
 
 
 }
-
-
-export interface ImmutableRound {
-  totalPointsByTeam: {}
-  turns: { log: {}, whoTakes: IPlayerReference}[]
-  roundInfo: IRoundInfo
-}
-
-export interface IPlayerReference {
-  ref: string
-  team: { ref: string}
+export class PresenterRound {
+  totalPointsByTeam: { [index: string]: number };
+  turns: ImmutableTrick[];
+  roundInfo: IParmeterizedRound;
 }
 
 

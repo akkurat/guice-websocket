@@ -1,0 +1,3 @@
+module game.collection.game.server.api.main {
+    exports ch.taburett.gameserver.spi;
+}

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree, Router } from '@angular/router';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { CheckUserService } from './check-user.service';
 
 @Injectable({
@@ -11,11 +12,12 @@ export class LoginactivateGuard implements CanActivate {
   {}
   canActivate(
     next: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot): Promise<boolean> {
-      return this.userService.isLoggedIn().then(v => {
-        if(!v) {this.router.navigate(['login'])}
+    state: RouterStateSnapshot): Observable<boolean> {
+      return this.userService.isLoggedIn().pipe(map(v => {
+        if(!v) 
+        {this.router.navigate(['login']); return false}
         return true;
-      })
+      }))
   }
   
 }

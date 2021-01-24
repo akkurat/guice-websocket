@@ -1,0 +1,8 @@
+import ch.taburett.gamemodi.std.JassModeProvider;
+import ch.taburett.gameserver.spi.IGameProvider;
+
+module game.collection.jass.games.main {
+    requires game.collection.game.server.api.main;
+    requires ch.taburett.jass.game;
+    provides IGameProvider with JassModeProvider;
+}

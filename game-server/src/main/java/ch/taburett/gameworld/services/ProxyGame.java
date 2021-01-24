@@ -1,5 +1,6 @@
 package ch.taburett.gameworld.services;
 
+import ch.taburett.gameserver.spi.IProxyInstanceableGame;
 import ch.taburett.gameworld.messages.UserMapEvent;
 import ch.taburett.jass.game.api.IGame;
 import ch.taburett.jass.game.api.IPlayerReference;
@@ -30,16 +31,16 @@ public class ProxyGame {
     public final String uuid;
     private String owner;
     private IGame game;
-    private ProxyInstanceableGame gameInfo;
+    private IProxyInstanceableGame gameInfo;
     private SimpMessagingTemplate simp;
 
     private final ExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
-    public ProxyGame(String owner, ProxyInstanceableGame gameInfo, IGame game, SimpMessagingTemplate simp) {
+    public ProxyGame(String owner, IProxyInstanceableGame gameInfo, IGame game, SimpMessagingTemplate simp) {
         this(owner, gameInfo, game, LocalDateTime.now(), String.valueOf(ThreadLocalRandom.current().nextInt(1000)), simp);
     }
 
-    private ProxyGame(String ownerUsername, ProxyInstanceableGame gameInfo, IGame game, LocalDateTime creationDateTime, String uuid, SimpMessagingTemplate simp) {
+    private ProxyGame(String ownerUsername, IProxyInstanceableGame gameInfo, IGame game, LocalDateTime creationDateTime, String uuid, SimpMessagingTemplate simp) {
         logger.trace("A TRACE Message");
         logger.debug("A DEBUG Message");
         logger.info("An INFO Message");

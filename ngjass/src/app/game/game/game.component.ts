@@ -14,13 +14,10 @@ import { JassServiceService } from '../jass-service.service'
 export class GameComponent implements OnInit {
   cards: ICardLegal[] = []
   cardBuffer = []
-  lastCardEvent: number = 0;
   yourTurn = false;
   users: Observable<UserPayload>;
   modi: { [index: string]: PresenterMode; };
   table: ImmutableLogEntry[];
-  gameEvents: string[] = [];
-  points: { [index: string]: number; };
   mode: TrickMode;
   waiting = false;
   params: any;
@@ -81,7 +78,6 @@ export class GameComponent implements OnInit {
 
   private popCards() {
     if (this.cardBuffer.length > 0) {
-      this.lastCardEvent = Date.now()
       this.table = this.cardBuffer.shift()
     }
   }
